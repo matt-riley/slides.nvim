@@ -11,6 +11,11 @@ function M.open()
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].swapfile = false
   vim.bo[buf].filetype = "markdown"
+  vim.bo[buf].syntax = "markdown"
+
+  if vim.treesitter and vim.treesitter.start then
+    pcall(vim.treesitter.start, buf, "markdown")
+  end
 
   local editor_width = vim.o.columns
   local editor_height = vim.o.lines - vim.o.cmdheight
