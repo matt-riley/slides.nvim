@@ -106,44 +106,6 @@ local function apply_header_winhl(win)
   vim.wo[win].winhl = table.concat(parts, ",")
 end
 
-local function hide_cursor(win)
-  local remaps = {}
-  local function add(from, to)
-    if vim.fn.hlexists(from) == 1 then remaps[from] = to end
-  end
-
-  add("Cursor", "Normal")
-  add("CursorIM", "Normal")
-  add("lCursor", "Normal")
-  add("TermCursor", "Normal")
-  add("TermCursorNC", "Normal")
-
-  local cur = vim.wo[win].winhl
-  local parts = {}
-  if cur and cur ~= "" then
-    for part in string.gmatch(cur, "[^,]+") do
-      local from = part:match("^([^:]+):")
-      if not (from and remaps[from]) then table.insert(parts, part) end
-    end
-  end
-
-  local ordered = { "Cursor", "CursorIM", "lCursor", "TermCursor", "TermCursorNC" }
-  for _, from in ipairs(ordered) do
-    local to = remaps[from]
-    if to then
-      table.insert(parts, from .. ":" .. to)
-      remaps[from] = nil
-    end
-  end
-  for from, to in pairs(remaps) do
-    table.insert(parts, from .. ":" .. to)
-  end
-
-  vim.wo[win].winhl = table.concat(parts, ",")
-  vim.wo[win].cursorline = false
-  vim.wo[win].cursorcolumn = false
-end
-
 --- Open the floating presentation window.
 function M.open()
   local buf = vim.api.nvim_create_buf(false, true)
@@ -216,9 +178,6 @@ function M.open()
   vim.wo[win].linebreak = true
   vim.wo[win].fillchars = "eob: "
   pcall(apply_header_winhl, win)
-  if cfg.hide_cursor ~= false then
-    pcall(hide_cursor, win)
-  end
 
   state.buf = buf
   state.win = win
