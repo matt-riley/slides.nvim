@@ -1,11 +1,11 @@
 # slides.nvim
 
-A tiny Neovim plugin for presenting Markdown slides in a centered floating window.
+A tiny Neovim plugin for presenting Markdown slides in a full-screen floating window.
 
 ## Features
 
 - Write slides in a single Markdown file, separated by `---`
-- Renders in a centered floating window
+- Renders in a full-screen floating window (configurable)
 - Slide counter
 - Syntax highlighting
 - Toggle the viewer with `:Slides`
