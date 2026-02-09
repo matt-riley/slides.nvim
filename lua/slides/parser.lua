@@ -30,8 +30,11 @@ function M.parse(lines)
   local slides = {}
   local current = {}
 
+  local slides_mod = package.loaded["slides"]
+  local separator = (slides_mod and slides_mod.config and slides_mod.config.separator) or "^%-%-%-+$"
+
   for _, line in ipairs(lines) do
-    if line:match("^%-%-%-+$") then
+    if line:match(separator) then
       local trimmed = trim_blank_lines(current)
       if #trimmed > 0 or #slides > 0 then
         table.insert(slides, trimmed)

@@ -8,7 +8,12 @@ local state = require("slides.state")
 --- Configure the plugin with user options.
 --- @param opts? table User configuration options
 function M.setup(opts)
-  -- TODO: merge opts with defaults
+  M.config = vim.tbl_deep_extend("force", {
+    separator = "^%-%-%-+$",
+    border = "rounded",
+    width = 0.8,
+    height = 0.8,
+  }, opts or {})
 end
 
 --- Toggle presentation mode on/off.
@@ -42,12 +47,20 @@ end
 
 --- Advance to the next slide.
 function M.next_slide()
-  -- TODO: implement
+  if not state.active then return end
+  if state.current < #state.slides then
+    state.current = state.current + 1
+    renderer.render(state.slides[state.current], state.current, #state.slides)
+  end
 end
 
 --- Go back to the previous slide.
 function M.prev_slide()
-  -- TODO: implement
+  if not state.active then return end
+  if state.current > 1 then
+    state.current = state.current - 1
+    renderer.render(state.slides[state.current], state.current, #state.slides)
+  end
 end
 
 return M
