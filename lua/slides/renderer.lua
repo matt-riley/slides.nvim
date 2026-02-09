@@ -55,29 +55,12 @@ function M.render(slide_lines, current, total)
   local win_width = vim.api.nvim_win_get_width(win)
   local win_height = vim.api.nvim_win_get_height(win)
 
-  -- Find the maximum line width for centering
-  local max_width = 0
-  for _, line in ipairs(slide_lines) do
-    if #line > max_width then
-      max_width = #line
-    end
-  end
-
-  -- Horizontal centering: pad each content line
-  local h_pad = math.max(0, math.floor((win_width - max_width) / 2))
-  local padding = string.rep(" ", h_pad)
-  local centered_lines = {}
-  for _, line in ipairs(slide_lines) do
-    table.insert(centered_lines, padding .. line)
-  end
-
   -- Slide counter footer
   local counter = string.format("[%d/%d]", current, total)
-  local counter_pad = string.rep(" ", math.max(0, math.floor((win_width - #counter) / 2)))
-  local counter_line = counter_pad .. counter
+  local counter_line = counter
 
   -- Vertical centering: total content = slide lines + 2 (blank + counter)
-  local content_height = #centered_lines + 2
+  local content_height = #slide_lines + 2
   local v_pad = math.max(0, math.floor((win_height - content_height) / 2))
 
   -- Build final buffer content
@@ -85,7 +68,7 @@ function M.render(slide_lines, current, total)
   for _ = 1, v_pad do
     table.insert(output, "")
   end
-  for _, line in ipairs(centered_lines) do
+  for _, line in ipairs(slide_lines) do
     table.insert(output, line)
   end
   table.insert(output, "")
