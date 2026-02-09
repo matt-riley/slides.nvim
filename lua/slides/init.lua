@@ -11,6 +11,7 @@ function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", {
     separator = "^%-%-%-+$",
     border = "rounded",
+    fullscreen = true,
     width = 0.8,
     height = 0.8,
   }, opts or {})

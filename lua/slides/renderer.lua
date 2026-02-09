@@ -18,11 +18,20 @@ function M.open()
   local slides_mod = package.loaded["slides"]
   local cfg = (slides_mod and slides_mod.config) or {}
 
-  local win_width = math.floor(editor_width * (cfg.width or 0.8))
-  local win_height = math.floor(editor_height * (cfg.height or 0.8))
+  local fullscreen = cfg.fullscreen ~= false
 
-  local col = math.floor((editor_width - win_width) / 2)
-  local row = math.floor((editor_height - win_height) / 2)
+  local win_width, win_height, col, row
+  if fullscreen then
+    win_width = editor_width
+    win_height = editor_height
+    col = 0
+    row = 0
+  else
+    win_width = math.floor(editor_width * (cfg.width or 0.8))
+    win_height = math.floor(editor_height * (cfg.height or 0.8))
+    col = math.floor((editor_width - win_width) / 2)
+    row = math.floor((editor_height - win_height) / 2)
+  end
 
   local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
@@ -31,7 +40,7 @@ function M.open()
     col = col,
     row = row,
     style = "minimal",
-    border = cfg.border or "rounded",
+    border = fullscreen and "none" or (cfg.border or "rounded"),
   })
 
   vim.wo[win].wrap = true
