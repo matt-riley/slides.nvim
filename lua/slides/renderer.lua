@@ -218,9 +218,6 @@ function M.open()
   pcall(apply_header_winhl, win)
   if cfg.hide_cursor ~= false then
     pcall(hide_cursor, win)
-    state.prev_guicursor = vim.o.guicursor
-    pcall(vim.api.nvim_set_hl, 0, "SlidesCursorHidden", { link = "Normal" })
-    vim.o.guicursor = "a:block-SlidesCursorHidden"
   end
 
   state.buf = buf
@@ -335,11 +332,6 @@ end
 
 --- Close the floating presentation window.
 function M.close()
-  if state.prev_guicursor ~= nil then
-    vim.o.guicursor = state.prev_guicursor
-    state.prev_guicursor = nil
-  end
-
   if state.win and vim.api.nvim_win_is_valid(state.win) then
     vim.api.nvim_win_close(state.win, true)
   end
