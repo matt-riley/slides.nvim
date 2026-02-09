@@ -1,5 +1,12 @@
 -- lua/slides/state.lua
-local M = { active=false, slides={}, current=1, buf=nil, win=nil, source_buf=nil }
+local M = {
+  active = false,
+  slides = {},
+  current = 1,
+  buf = nil,
+  win = nil,
+  source_buf = nil,
+}
 
 --- Reset state to initial values.
 function M.reset()
