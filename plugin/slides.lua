@@ -1,0 +1,3 @@
+-- plugin/slides.lua
+-- Auto-loaded by Neovim. Registers the :Slides user command.
+-- TODO: implement after navigation module is complete
