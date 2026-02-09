@@ -108,6 +108,29 @@ function M.open()
 
   local win_width, win_height, col, row
   if fullscreen then
+    local bg_buf = vim.api.nvim_create_buf(false, true)
+    vim.bo[bg_buf].buftype = "nofile"
+    vim.bo[bg_buf].bufhidden = "wipe"
+    vim.bo[bg_buf].swapfile = false
+    vim.bo[bg_buf].modifiable = false
+
+    local bg_win = vim.api.nvim_open_win(bg_buf, false, {
+      relative = "editor",
+      width = editor_width,
+      height = editor_height,
+      col = 0,
+      row = 0,
+      style = "minimal",
+      border = "none",
+      focusable = false,
+      zindex = 10,
+    })
+
+    vim.wo[bg_win].fillchars = "eob: "
+
+    state.bg_buf = bg_buf
+    state.bg_win = bg_win
+
     win_width = editor_width
     win_height = editor_height
     col = 0
@@ -127,10 +150,12 @@ function M.open()
     row = row,
     style = "minimal",
     border = fullscreen and "none" or (cfg.border or "rounded"),
+    zindex = fullscreen and 20 or nil,
   })
 
   vim.wo[win].wrap = true
   vim.wo[win].linebreak = true
+  vim.wo[win].fillchars = "eob: "
   pcall(apply_header_winhl, win)
 
   state.buf = buf
@@ -148,12 +173,63 @@ function M.render(slide_lines, current, total)
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
   if not win or not vim.api.nvim_win_is_valid(win) then return end
 
-  local win_width = vim.api.nvim_win_get_width(win)
-  local win_height = vim.api.nvim_win_get_height(win)
+  local slides_mod = package.loaded["slides"]
+  local cfg = (slides_mod and slides_mod.config) or {}
+  local fullscreen = cfg.fullscreen ~= false
+
+  local editor_width = vim.o.columns
+  local editor_height = vim.o.lines - vim.o.cmdheight
+
+  if fullscreen and state.bg_win and vim.api.nvim_win_is_valid(state.bg_win) then
+    pcall(vim.api.nvim_win_set_config, state.bg_win, {
+      relative = "editor",
+      width = editor_width,
+      height = editor_height,
+      col = 0,
+      row = 0,
+    })
+  end
 
   -- Slide counter footer
-  local counter = string.format("[%d/%d]", current, total)
-  local counter_line = counter
+  local counter_line = string.format("[%d/%d]", current, total)
+
+  if fullscreen then
+    local max_w = vim.fn.strdisplaywidth(counter_line)
+    for _, line in ipairs(slide_lines) do
+      max_w = math.max(max_w, vim.fn.strdisplaywidth(line))
+    end
+
+    local content_height = #slide_lines + 2 -- blank + counter
+
+    local win_width = math.min(editor_width, math.max(1, max_w))
+    local win_height = math.min(editor_height, math.max(1, content_height))
+
+    local col = math.floor((editor_width - win_width) / 2)
+    local row = math.floor((editor_height - win_height) / 2)
+
+    pcall(vim.api.nvim_win_set_config, win, {
+      relative = "editor",
+      width = win_width,
+      height = win_height,
+      col = col,
+      row = row,
+    })
+
+    local output = {}
+    for _, line in ipairs(slide_lines) do
+      table.insert(output, line)
+    end
+    table.insert(output, "")
+    table.insert(output, counter_line)
+
+    vim.bo[buf].modifiable = true
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
+    vim.bo[buf].modifiable = false
+
+    return
+  end
+
+  local win_height = vim.api.nvim_win_get_height(win)
 
   -- Vertical centering: total content = slide lines + 2 (blank + counter)
   local content_height = #slide_lines + 2
@@ -184,8 +260,16 @@ function M.close()
   if state.buf and vim.api.nvim_buf_is_valid(state.buf) then
     vim.api.nvim_buf_delete(state.buf, { force = true })
   end
+  if state.bg_win and vim.api.nvim_win_is_valid(state.bg_win) then
+    vim.api.nvim_win_close(state.bg_win, true)
+  end
+  if state.bg_buf and vim.api.nvim_buf_is_valid(state.bg_buf) then
+    vim.api.nvim_buf_delete(state.bg_buf, { force = true })
+  end
   state.win = nil
   state.buf = nil
+  state.bg_win = nil
+  state.bg_buf = nil
 end
 
 return M

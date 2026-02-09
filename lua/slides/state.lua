@@ -5,6 +5,8 @@ local M = {
   current = 1,
   buf = nil,
   win = nil,
+  bg_buf = nil,
+  bg_win = nil,
   source_buf = nil,
 }
 
@@ -15,6 +17,8 @@ function M.reset()
   M.current = 1
   M.buf = nil
   M.win = nil
+  M.bg_buf = nil
+  M.bg_win = nil
   M.source_buf = nil
 end
 
