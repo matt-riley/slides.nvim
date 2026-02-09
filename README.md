@@ -52,6 +52,7 @@ use { "mattriley/slides.nvim", config = function() require("slides").setup() end
 ```lua
 require("slides").setup({
   -- fullscreen = true,
+  -- hide_cursor = true,
   -- border = "rounded",
   -- width = 0.8,
   -- height = 0.8,
@@ -61,6 +62,7 @@ require("slides").setup({
 Available options:
 
 - `fullscreen`: use a full-screen floating window (default: true)
+- `hide_cursor`: hide the cursor in slides (default: true)
 - `border`: floating window border style (used when fullscreen = false)
 - `width`: floating window width (number, used when fullscreen = false)
 - `height`: floating window height (number, used when fullscreen = false)

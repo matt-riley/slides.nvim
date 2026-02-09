@@ -12,6 +12,7 @@ function M.setup(opts)
     separator = "^%-%-%-+$",
     border = "rounded",
     fullscreen = true,
+    hide_cursor = true,
     width = 0.8,
     height = 0.8,
   }, opts or {})
