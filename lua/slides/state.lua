@@ -9,6 +9,7 @@ local M = {
   bg_win = nil,
   source_buf = nil,
   prev_guicursor = nil,
+  cursor_hidden = false,
 }
 
 --- Reset state to initial values.
@@ -22,6 +23,7 @@ function M.reset()
   M.bg_win = nil
   M.source_buf = nil
   M.prev_guicursor = nil
+  M.cursor_hidden = false
 end
 
 return M

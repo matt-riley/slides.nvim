@@ -144,6 +144,15 @@ local function hide_cursor(win)
   vim.wo[win].cursorcolumn = false
 end
 
+local function set_tui_cursor_visible(visible)
+  if vim.fn.has("gui_running") == 1 then return end
+  if #vim.api.nvim_list_uis() == 0 then return end
+
+  local seq = visible and "\27[?25h" or "\27[?25l"
+  vim.api.nvim_out_write(seq)
+  pcall(vim.cmd, "redraw")
+end
+
 --- Open the floating presentation window.
 function M.open()
   local buf = vim.api.nvim_create_buf(false, true)
@@ -221,6 +230,10 @@ function M.open()
     state.prev_guicursor = vim.o.guicursor
     pcall(vim.api.nvim_set_hl, 0, "SlidesCursorHidden", { link = "Normal" })
     vim.o.guicursor = "a:block-SlidesCursorHidden"
+    if not state.cursor_hidden then
+      set_tui_cursor_visible(false)
+      state.cursor_hidden = true
+    end
   end
 
   state.buf = buf
@@ -338,6 +351,10 @@ function M.close()
   if state.prev_guicursor ~= nil then
     vim.o.guicursor = state.prev_guicursor
     state.prev_guicursor = nil
+  end
+  if state.cursor_hidden then
+    set_tui_cursor_visible(true)
+    state.cursor_hidden = false
   end
 
   if state.win and vim.api.nvim_win_is_valid(state.win) then
