@@ -146,7 +146,6 @@ function M.open()
       style = "minimal",
       border = "none",
       focusable = false,
-      zindex = 10,
     })
 
     vim.wo[bg_win].fillchars = "eob: "
@@ -173,7 +172,6 @@ function M.open()
     row = row,
     style = "minimal",
     border = fullscreen and "none" or (cfg.border or "rounded"),
-    zindex = fullscreen and 20 or nil,
   })
 
   vim.wo[win].wrap = true
@@ -219,11 +217,23 @@ function M.render(slide_lines, current, total)
   if fullscreen then
     if state.bg_buf and vim.api.nvim_buf_is_valid(state.bg_buf) then
       ensure_bg_buf_height(state.bg_buf, editor_height)
+
+      vim.bo[state.bg_buf].modifiable = true
+      vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { "" })
+      vim.bo[state.bg_buf].modifiable = false
+
       vim.api.nvim_buf_clear_namespace(state.bg_buf, counter_ns, 0, -1)
-      pcall(vim.api.nvim_buf_set_extmark, state.bg_buf, counter_ns, editor_height - 1, 0, {
+      local ok = pcall(vim.api.nvim_buf_set_extmark, state.bg_buf, counter_ns, editor_height - 1, 0, {
         virt_text = { { counter_line, "Comment" } },
         virt_text_pos = "right_align",
       })
+
+      if not ok then
+        local pad = math.max(0, editor_width - vim.fn.strdisplaywidth(counter_line))
+        vim.bo[state.bg_buf].modifiable = true
+        vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { string.rep(" ", pad) .. counter_line })
+        vim.bo[state.bg_buf].modifiable = false
+      end
     end
 
     local max_w = 1
