@@ -3,6 +3,28 @@ local M = {}
 
 local state = require("slides.state")
 
+local counter_ns = vim.api.nvim_create_namespace("slides_counter")
+
+local function ensure_bg_buf_height(buf, height)
+  if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
+  height = math.max(1, height)
+
+  local cur = vim.api.nvim_buf_line_count(buf)
+  if cur == height then return end
+
+  vim.bo[buf].modifiable = true
+  if cur < height then
+    local pad = {}
+    for _ = 1, (height - cur) do
+      pad[#pad + 1] = ""
+    end
+    vim.api.nvim_buf_set_lines(buf, cur, cur, false, pad)
+  else
+    vim.api.nvim_buf_set_lines(buf, height, -1, false, {})
+  end
+  vim.bo[buf].modifiable = false
+end
+
 local function apply_header_winhl(win)
   local remaps = {}
   local function add(from, to)
@@ -112,7 +134,8 @@ function M.open()
     vim.bo[bg_buf].buftype = "nofile"
     vim.bo[bg_buf].bufhidden = "wipe"
     vim.bo[bg_buf].swapfile = false
-    vim.bo[bg_buf].modifiable = false
+
+    ensure_bg_buf_height(bg_buf, editor_height)
 
     local bg_win = vim.api.nvim_open_win(bg_buf, false, {
       relative = "editor",
@@ -194,15 +217,24 @@ function M.render(slide_lines, current, total)
   local counter_line = string.format("[%d/%d]", current, total)
 
   if fullscreen then
-    local max_w = vim.fn.strdisplaywidth(counter_line)
+    if state.bg_buf and vim.api.nvim_buf_is_valid(state.bg_buf) then
+      ensure_bg_buf_height(state.bg_buf, editor_height)
+      vim.api.nvim_buf_clear_namespace(state.bg_buf, counter_ns, 0, -1)
+      pcall(vim.api.nvim_buf_set_extmark, state.bg_buf, counter_ns, editor_height - 1, 0, {
+        virt_text = { { counter_line, "Comment" } },
+        virt_text_pos = "right_align",
+      })
+    end
+
+    local max_w = 1
     for _, line in ipairs(slide_lines) do
       max_w = math.max(max_w, vim.fn.strdisplaywidth(line))
     end
 
-    local content_height = #slide_lines + 2 -- blank + counter
+    local content_height = math.max(1, #slide_lines)
 
     local win_width = math.min(editor_width, math.max(1, max_w))
-    local win_height = math.min(editor_height, math.max(1, content_height))
+    local win_height = math.min(editor_height, content_height)
 
     local col = math.floor((editor_width - win_width) / 2)
     local row = math.floor((editor_height - win_height) / 2)
@@ -215,12 +247,7 @@ function M.render(slide_lines, current, total)
       row = row,
     })
 
-    local output = {}
-    for _, line in ipairs(slide_lines) do
-      table.insert(output, line)
-    end
-    table.insert(output, "")
-    table.insert(output, counter_line)
+    local output = (#slide_lines > 0) and slide_lines or { "" }
 
     vim.bo[buf].modifiable = true
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
