@@ -3,6 +3,87 @@ local M = {}
 
 local state = require("slides.state")
 
+local function apply_header_winhl(win)
+  local remaps = {}
+  local function add(from, to)
+    if vim.fn.hlexists(from) == 1 then remaps[from] = to end
+  end
+
+  for i = 1, 6 do
+    add("markdownH" .. i, "Title")
+    add("markdownH" .. i .. "Delimiter", "Title")
+    add("markdownH" .. i .. "Line", "Title")
+  end
+  add("markdownHeadingDelimiter", "Title")
+
+  add("@markup.heading", "Title")
+  add("@markup.heading.marker", "Title")
+  for i = 1, 6 do
+    add("@markup.heading." .. i, "Title")
+    add("@text.title." .. i, "Title")
+  end
+  add("@text.title", "Title")
+
+  local cur = vim.wo[win].winhl
+  local parts = {}
+  if cur and cur ~= "" then
+    for part in string.gmatch(cur, "[^,]+") do
+      local from = part:match("^([^:]+):")
+      if not (from and remaps[from]) then table.insert(parts, part) end
+    end
+  end
+
+  local ordered = {
+    "markdownHeadingDelimiter",
+    "markdownH1",
+    "markdownH1Delimiter",
+    "markdownH1Line",
+    "markdownH2",
+    "markdownH2Delimiter",
+    "markdownH2Line",
+    "markdownH3",
+    "markdownH3Delimiter",
+    "markdownH3Line",
+    "markdownH4",
+    "markdownH4Delimiter",
+    "markdownH4Line",
+    "markdownH5",
+    "markdownH5Delimiter",
+    "markdownH5Line",
+    "markdownH6",
+    "markdownH6Delimiter",
+    "markdownH6Line",
+    "@markup.heading",
+    "@markup.heading.marker",
+    "@markup.heading.1",
+    "@markup.heading.2",
+    "@markup.heading.3",
+    "@markup.heading.4",
+    "@markup.heading.5",
+    "@markup.heading.6",
+    "@text.title",
+    "@text.title.1",
+    "@text.title.2",
+    "@text.title.3",
+    "@text.title.4",
+    "@text.title.5",
+    "@text.title.6",
+  }
+
+  for _, from in ipairs(ordered) do
+    local to = remaps[from]
+    if to then
+      table.insert(parts, from .. ":" .. to)
+      remaps[from] = nil
+    end
+  end
+  for from, to in pairs(remaps) do
+    table.insert(parts, from .. ":" .. to)
+  end
+
+  vim.wo[win].winhl = table.concat(parts, ",")
+end
+
 --- Open the floating presentation window.
 function M.open()
   local buf = vim.api.nvim_create_buf(false, true)
@@ -50,6 +131,7 @@ function M.open()
 
   vim.wo[win].wrap = true
   vim.wo[win].linebreak = true
+  pcall(apply_header_winhl, win)
 
   state.buf = buf
   state.win = win
