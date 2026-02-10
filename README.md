@@ -10,6 +10,7 @@ A tiny Neovim plugin for presenting Markdown slides in a full-screen floating wi
 - Syntax highlighting
 - Live reload on file save
 - Execute code blocks with `<C-e>`
+- Fragments/reveals with `++` separators
 - Pre-process content with `~~~` blocks
 - Toggle the viewer with `:Slides`
 
@@ -68,6 +69,18 @@ require("slides").setup({
 
 Press `<C-e>` to execute the first code block on the current slide. Supported languages: `lua`, `bash`, `sh`, `python`, `go`/`golang`, `ts`/`typescript` (via bun). The output is appended to the slide.
 
+### Fragments/Reveals
+
+Use `++` on its own line to reveal content in steps within a slide. The next/previous slide keys advance through fragments before changing slides.
+
+```markdown
+- Item 1
++
+- Item 2
++
+- Item 3
+```
+
 ### Pre-processing
 
 Use `~~~command` blocks to generate content dynamically. For example:
@@ -83,6 +96,7 @@ Available options:
 - `border`: floating window border style (used when fullscreen = false)
 - `width`: floating window width (number, used when fullscreen = false)
 - `height`: floating window height (number, used when fullscreen = false)
+- `fragment_separator`: pattern for fragment separators (default: `^%+%++$`)
 
 Slides are split on `---`.
 

@@ -12,6 +12,7 @@ setup_set["applies defaults and overrides"] = function()
   MiniTest.expect.equality(slides.config.fullscreen, false)
   MiniTest.expect.equality(slides.config.border, "single")
   MiniTest.expect.equality(slides.config.separator, "^%-%-%-+$")
+  MiniTest.expect.equality(slides.config.fragment_separator, "^%+%++$")
   MiniTest.expect.equality(slides.config.width, 0.8)
   MiniTest.expect.equality(slides.config.height, 0.8)
 end
@@ -24,6 +25,8 @@ state_set["resets state fields"] = function()
   state.active = true
   state.slides = { { "slide" } }
   state.current = 2
+  state.fragments = { { "a" } }
+  state.fragment_index = 2
   state.buf = 12
   state.win = 34
   state.bg_buf = 56
@@ -35,6 +38,8 @@ state_set["resets state fields"] = function()
   MiniTest.expect.equality(state.active, false)
   MiniTest.expect.equality(state.slides, {})
   MiniTest.expect.equality(state.current, 1)
+  MiniTest.expect.equality(state.fragments, {})
+  MiniTest.expect.equality(state.fragment_index, 1)
   MiniTest.expect.equality(state.buf, nil)
   MiniTest.expect.equality(state.win, nil)
   MiniTest.expect.equality(state.bg_buf, nil)

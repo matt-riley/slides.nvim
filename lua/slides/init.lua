@@ -5,11 +5,28 @@ local parser = require("slides.parser")
 local renderer = require("slides.renderer")
 local state = require("slides.state")
 
+local function update_fragments()
+  state.fragments = parser.build_fragments(state.slides[state.current] or {})
+  if #state.fragments == 0 then
+    state.fragments = { {} }
+  end
+  if not state.fragment_index or state.fragment_index < 1 then
+    state.fragment_index = 1
+  elseif state.fragment_index > #state.fragments then
+    state.fragment_index = #state.fragments
+  end
+end
+
+local function render_current()
+  renderer.render(state.fragments[state.fragment_index], state.current, #state.slides)
+end
+
 --- Configure the plugin with user options.
 --- @param opts? table User configuration options
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", {
     separator = "^%-%-%-+$",
+    fragment_separator = "^%+%++$",
     border = "rounded",
     fullscreen = true,
     width = 0.8,
@@ -33,10 +50,12 @@ function M.toggle()
   state.source_buf = source_buf
   state.slides = slides
   state.current = 1
+  state.fragment_index = 1
   state.active = true
 
   renderer.open()
-  renderer.render(state.slides[state.current], state.current, #state.slides)
+  update_fragments()
+  render_current()
 
   -- Buffer-local keymaps for navigation
   local buf = state.buf
@@ -70,14 +89,15 @@ function M.refresh()
     state.current = #slides
   end
 
-  renderer.render(state.slides[state.current], state.current, #state.slides)
+  update_fragments()
+  render_current()
 end
 
 --- Execute the first code block in the current slide.
 function M.execute_code()
   if not state.active or not state.buf then return end
 
-  local current_slide = state.slides[state.current]
+  local current_slide = (state.fragments and state.fragments[state.fragment_index]) or state.slides[state.current]
   local blocks = parser.find_code_blocks(current_slide)
 
   if #blocks == 0 then
@@ -143,18 +163,32 @@ end
 --- Advance to the next slide.
 function M.next_slide()
   if not state.active then return end
+  if state.fragment_index < #state.fragments then
+    state.fragment_index = state.fragment_index + 1
+    render_current()
+    return
+  end
   if state.current < #state.slides then
     state.current = state.current + 1
-    renderer.render(state.slides[state.current], state.current, #state.slides)
+    state.fragment_index = 1
+    update_fragments()
+    render_current()
   end
 end
 
 --- Go back to the previous slide.
 function M.prev_slide()
   if not state.active then return end
+  if state.fragment_index > 1 then
+    state.fragment_index = state.fragment_index - 1
+    render_current()
+    return
+  end
   if state.current > 1 then
     state.current = state.current - 1
-    renderer.render(state.slides[state.current], state.current, #state.slides)
+    update_fragments()
+    state.fragment_index = #state.fragments
+    render_current()
   end
 end
 

@@ -144,4 +144,40 @@ function M.find_code_blocks(lines)
   return blocks
 end
 
+--- Build incremental fragments from a slide.
+--- @param lines string[]
+--- @return string[][] List of fragments
+function M.build_fragments(lines)
+  local slides_mod = package.loaded["slides"]
+  local separator = (slides_mod and slides_mod.config and slides_mod.config.fragment_separator) or "^%+%++$"
+
+  local groups = { {} }
+  for _, line in ipairs(lines) do
+    if line:match(separator) then
+      table.insert(groups, {})
+    else
+      table.insert(groups[#groups], line)
+    end
+  end
+
+  local fragments = {}
+  local acc = {}
+  for _, group in ipairs(groups) do
+    for _, line in ipairs(group) do
+      table.insert(acc, line)
+    end
+    local snapshot = {}
+    for _, line in ipairs(acc) do
+      table.insert(snapshot, line)
+    end
+    table.insert(fragments, snapshot)
+  end
+
+  if #fragments == 0 then
+    table.insert(fragments, {})
+  end
+
+  return fragments
+end
+
 return M
