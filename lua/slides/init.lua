@@ -88,26 +88,35 @@ function M.execute_code()
   local block = blocks[1]
   local output = {}
 
+  local function append_output(result)
+    for line in result:gmatch("[^\r\n]+") do
+      table.insert(output, line)
+    end
+  end
+
+  local function run_tempfile(ext, cmd, code_lines)
+    local tmp = vim.fn.tempname() .. ext
+    vim.fn.writefile(code_lines, tmp)
+    local result = vim.fn.system(cmd .. " " .. vim.fn.shellescape(tmp))
+    vim.fn.delete(tmp)
+    return result
+  end
+
   if block.lang == "lua" then
     local code = table.concat(block.code, "\n")
     -- Capture print output? Complex. For now just run it.
     -- Or use redirect.
-    local captured = vim.fn.execute("lua " .. code)
-    for line in captured:gmatch("[^\r\n]+") do
-      table.insert(output, line)
-    end
+    append_output(vim.fn.execute("lua " .. code))
   elseif block.lang == "bash" or block.lang == "sh" then
     local code = table.concat(block.code, "\n")
-    local result = vim.fn.system(code)
-    for line in result:gmatch("[^\r\n]+") do
-      table.insert(output, line)
-    end
+    append_output(vim.fn.system(code))
   elseif block.lang == "python" or block.lang == "python3" then
     local code = table.concat(block.code, "\n")
-    local result = vim.fn.system("python3 -c " .. vim.fn.shellescape(code))
-    for line in result:gmatch("[^\r\n]+") do
-      table.insert(output, line)
-    end
+    append_output(vim.fn.system("python3 -c " .. vim.fn.shellescape(code)))
+  elseif block.lang == "go" or block.lang == "golang" then
+    append_output(run_tempfile(".go", "go run", block.code))
+  elseif block.lang == "typescript" or block.lang == "ts" then
+    append_output(run_tempfile(".ts", "bun run", block.code))
   else
     print("Unsupported language: " .. (block.lang or "unknown"))
     return
