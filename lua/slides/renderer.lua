@@ -2,6 +2,7 @@
 local M = {}
 
 local state = require("slides.state")
+local images = require("slides.images")
 
 local counter_ns = vim.api.nvim_create_namespace("slides_counter")
 
@@ -197,9 +198,26 @@ function M.render(slide_lines, current, total)
   local slides_mod = package.loaded["slides"]
   local cfg = (slides_mod and slides_mod.config) or {}
   local fullscreen = cfg.fullscreen ~= false
+  local image_cfg = cfg.images or {}
 
   local editor_width = vim.o.columns
   local editor_height = vim.o.lines - vim.o.cmdheight
+
+  images.clear(state.image_handles)
+  state.image_handles = nil
+
+  local render_images = image_cfg.enabled == true
+  local image_entries
+  if render_images then
+    local available = images.is_available()
+    if not available then
+      images.notify_missing()
+    end
+    local prepared = images.prepare(slide_lines, state.source_buf, image_cfg, available)
+    slide_lines = prepared.lines
+    image_entries = prepared.images
+    render_images = available
+  end
 
   if fullscreen and state.bg_win and vim.api.nvim_win_is_valid(state.bg_win) then
     pcall(vim.api.nvim_win_set_config, state.bg_win, {
@@ -245,6 +263,10 @@ function M.render(slide_lines, current, total)
 
     local win_width = math.min(editor_width, math.max(1, max_w))
     local win_height = math.min(editor_height, content_height)
+    if render_images and image_entries and #image_entries > 0 then
+      win_width = editor_width
+      win_height = editor_height
+    end
 
     local col = math.floor((editor_width - win_width) / 2)
     local row = math.floor((editor_height - win_height) / 2)
@@ -262,6 +284,16 @@ function M.render(slide_lines, current, total)
     vim.bo[buf].modifiable = true
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
     vim.bo[buf].modifiable = false
+
+    if render_images then
+      state.image_handles = images.render(image_entries, {
+        window = win,
+        buffer = buf,
+        row_offset = 0,
+        max_width_window_percentage = image_cfg.max_width_window_percentage,
+        max_height_window_percentage = image_cfg.max_height_window_percentage,
+      })
+    end
 
     return
   end
@@ -287,10 +319,22 @@ function M.render(slide_lines, current, total)
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
   vim.bo[buf].modifiable = false
+
+  if render_images then
+    state.image_handles = images.render(image_entries, {
+      window = win,
+      buffer = buf,
+      row_offset = v_pad,
+      max_width_window_percentage = image_cfg.max_width_window_percentage,
+      max_height_window_percentage = image_cfg.max_height_window_percentage,
+    })
+  end
 end
 
 --- Close the floating presentation window.
 function M.close()
+  images.clear(state.image_handles)
+  state.image_handles = nil
   if state.win and vim.api.nvim_win_is_valid(state.win) then
     vim.api.nvim_win_close(state.win, true)
   end

@@ -9,6 +9,7 @@ A tiny Neovim plugin for presenting Markdown slides in a full-screen floating wi
 - Slide counter
 - Syntax highlighting
 - Toggle the viewer with `:Slides`
+- Optional inline image rendering via image.nvim (Kitty/Ghostty compatible)
 
 ## Installation
 
@@ -38,6 +39,28 @@ use { "mattriley/slides.nvim", config = function() require("slides").setup() end
    :Slides
    ```
 
+## Images
+
+Image rendering is optional and uses [image.nvim](https://github.com/3rd/image.nvim).
+Place images on their own line using standard Markdown syntax:
+
+```markdown
+![Alt text](path/to/image.png)
+![Remote](https://example.com/image.png)
+```
+
+Enable image support in your setup:
+
+```lua
+require("slides").setup({
+  images = {
+    enabled = true,
+  },
+})
+```
+
+Remote URLs require `curl`. See image.nvim for ImageMagick and terminal requirements.
+
 ## Keybindings
 
 | Key | Action |
@@ -55,6 +78,12 @@ require("slides").setup({
   -- border = "rounded",
   -- width = 0.8,
   -- height = 0.8,
+  -- images = {
+  --   enabled = false,
+  --   download_remote = true,
+  --   max_width_window_percentage = 100,
+  --   max_height_window_percentage = 50,
+  -- },
 })
 ```
 
@@ -64,6 +93,10 @@ Available options:
 - `border`: floating window border style (used when fullscreen = false)
 - `width`: floating window width (number, used when fullscreen = false)
 - `height`: floating window height (number, used when fullscreen = false)
+- `images.enabled`: enable image rendering via image.nvim (default: false)
+- `images.download_remote`: allow remote image URLs (default: true, requires `curl`)
+- `images.max_width_window_percentage`: max width as percent of window (default: 100)
+- `images.max_height_window_percentage`: max height as percent of window (default: 50)
 
 Slides are split on `---`.
 
@@ -71,6 +104,7 @@ Slides are split on `---`.
 
 - Neovim 0.8+
 - (Optional) Treesitter Markdown parser for improved syntax highlighting
+- (Optional) image.nvim + ImageMagick for image rendering in Kitty/Ghostty-compatible terminals
 
 ## Testing
 

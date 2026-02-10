@@ -14,6 +14,10 @@ setup_set["applies defaults and overrides"] = function()
   MiniTest.expect.equality(slides.config.separator, "^%-%-%-+$")
   MiniTest.expect.equality(slides.config.width, 0.8)
   MiniTest.expect.equality(slides.config.height, 0.8)
+  MiniTest.expect.equality(slides.config.images.enabled, false)
+  MiniTest.expect.equality(slides.config.images.download_remote, true)
+  MiniTest.expect.equality(slides.config.images.max_width_window_percentage, 100)
+  MiniTest.expect.equality(slides.config.images.max_height_window_percentage, 50)
 end
 
 T["setup"] = setup_set
@@ -29,6 +33,7 @@ state_set["resets state fields"] = function()
   state.bg_buf = 56
   state.bg_win = 78
   state.source_buf = 90
+  state.image_handles = { "img" }
 
   state.reset()
 
@@ -40,6 +45,7 @@ state_set["resets state fields"] = function()
   MiniTest.expect.equality(state.bg_buf, nil)
   MiniTest.expect.equality(state.bg_win, nil)
   MiniTest.expect.equality(state.source_buf, nil)
+  MiniTest.expect.equality(state.image_handles, nil)
 end
 
 T["state.reset"] = state_set

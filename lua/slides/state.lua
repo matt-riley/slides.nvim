@@ -8,6 +8,7 @@ local M = {
   bg_buf = nil,
   bg_win = nil,
   source_buf = nil,
+  image_handles = nil,
 }
 
 --- Reset state to initial values.
@@ -20,6 +21,7 @@ function M.reset()
   M.bg_buf = nil
   M.bg_win = nil
   M.source_buf = nil
+  M.image_handles = nil
 end
 
 return M
