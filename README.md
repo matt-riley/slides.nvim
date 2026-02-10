@@ -71,3 +71,14 @@ Slides are split on `---`.
 
 - Neovim 0.8+
 - (Optional) Treesitter Markdown parser for improved syntax highlighting
+
+## Testing
+
+Tests use [plenary.nvim](https://github.com/nvim-lua/plenary.nvim). Ensure it is installed (or set
+`PLENARY_PATH` to a local checkout), then run:
+
+```bash
+PLENARY_PATH=/path/to/plenary.nvim \
+  nvim --headless -u tests/minimal_init.lua \
+  -c "PlenaryBustedDirectory tests/ { minimal_init = 'tests/minimal_init.lua' }"
+```
