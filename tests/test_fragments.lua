@@ -71,13 +71,17 @@ fragment_set["steps through fragments before slides"] = function()
   MiniTest.expect.equality(state.fragments[1], { "A" })
   MiniTest.expect.equality(state.fragments[2], { "A", "B" })
 
+  state.output_lines = { "out" }
+
   slides.next_slide()
   MiniTest.expect.equality(state.current, 1)
   MiniTest.expect.equality(state.fragment_index, 2)
+  MiniTest.expect.equality(state.output_lines, { "out" })
 
   slides.next_slide()
   MiniTest.expect.equality(state.current, 2)
   MiniTest.expect.equality(state.fragment_index, 1)
+  MiniTest.expect.equality(state.output_lines, nil)
   MiniTest.expect.equality(state.fragments[1], { "C" })
   MiniTest.expect.equality(state.fragments[2], { "C", "D" })
 

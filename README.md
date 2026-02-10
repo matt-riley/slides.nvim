@@ -67,7 +67,7 @@ require("slides").setup({
 
 ### Code Execution
 
-Press `<C-e>` to execute the first code block on the current slide. Supported languages: `lua`, `bash`, `sh`, `python`, `go`/`golang`, `ts`/`typescript` (via bun). The output is appended to the slide.
+Press `<C-e>` to execute the first code block on the current slide. Supported languages: `lua`, `bash`, `sh`, `python`, `go`/`golang`, `ts`/`typescript` (via bun). In fullscreen mode the output is rendered in a footer area.
 
 ### Fragments/Reveals
 

@@ -51,6 +51,7 @@ function M.toggle()
   state.slides = slides
   state.current = 1
   state.fragment_index = 1
+  state.output_lines = nil
   state.active = true
 
   renderer.open()
@@ -89,6 +90,7 @@ function M.refresh()
     state.current = #slides
   end
 
+  state.output_lines = nil
   update_fragments()
   render_current()
 end
@@ -142,22 +144,8 @@ function M.execute_code()
     return
   end
 
-  -- Append output to buffer
-  local buf = state.buf
-  local line_count = vim.api.nvim_buf_line_count(buf)
-  
-  -- Remove previous output if it looks like output?
-  -- For now just append.
-  
-  local display_lines = { "", "--- Output ---" }
-  for _, line in ipairs(output) do
-    table.insert(display_lines, line)
-  end
-  table.insert(display_lines, "--------------")
-
-  vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, line_count, -1, false, display_lines)
-  vim.bo[buf].modifiable = false
+  state.output_lines = output
+  render_current()
 end
 
 --- Advance to the next slide.
@@ -171,6 +159,7 @@ function M.next_slide()
   if state.current < #state.slides then
     state.current = state.current + 1
     state.fragment_index = 1
+    state.output_lines = nil
     update_fragments()
     render_current()
   end
@@ -186,6 +175,7 @@ function M.prev_slide()
   end
   if state.current > 1 then
     state.current = state.current - 1
+    state.output_lines = nil
     update_fragments()
     state.fragment_index = #state.fragments
     render_current()

@@ -106,6 +106,80 @@ local function apply_header_winhl(win)
   vim.wo[win].winhl = table.concat(parts, ",")
 end
 
+local function build_output_block(output_lines)
+  if output_lines == nil then
+    return {}
+  end
+
+  local block = { "", "--- Output ---" }
+  for _, line in ipairs(output_lines) do
+    table.insert(block, line)
+  end
+  table.insert(block, "--------------")
+
+  return block
+end
+
+local function trim_output_lines(output_lines, max_lines)
+  if output_lines == nil or #output_lines <= max_lines then
+    return output_lines
+  end
+
+  local trimmed = {}
+  local start = #output_lines - max_lines + 1
+  for i = start, #output_lines do
+    table.insert(trimmed, output_lines[i])
+  end
+  return trimmed
+end
+
+function M.build_fullscreen_lines(slide_lines, output_lines, height)
+  height = math.max(1, height)
+
+  local output_block = {}
+  if output_lines ~= nil then
+    local max_output_height = height - 1
+    if max_output_height >= 3 then
+      local max_output_lines = max_output_height - 3
+      local trimmed = trim_output_lines(output_lines, max_output_lines)
+      output_block = build_output_block(trimmed)
+    end
+  end
+
+  local output_height = #output_block
+  local available_height = math.max(1, height - output_height)
+
+  local content = slide_lines
+  if #content > available_height then
+    content = {}
+    for i = 1, available_height do
+      table.insert(content, slide_lines[i])
+    end
+  end
+
+  local v_pad = math.max(0, math.floor((available_height - #content) / 2))
+  local bottom_pad = available_height - #content - v_pad
+
+  local lines = {}
+  for _ = 1, v_pad do
+    table.insert(lines, "")
+  end
+  for _, line in ipairs(content) do
+    table.insert(lines, line)
+  end
+  for _ = 1, bottom_pad do
+    table.insert(lines, "")
+  end
+  for _, line in ipairs(output_block) do
+    table.insert(lines, line)
+  end
+  while #lines < height do
+    table.insert(lines, "")
+  end
+
+  return lines
+end
+
 --- Open the floating presentation window.
 function M.open()
   local buf = vim.api.nvim_create_buf(false, true)
@@ -215,53 +289,26 @@ function M.render(slide_lines, current, total)
   local counter_line = string.format("[%d/%d]", current, total)
 
   if fullscreen then
-    if state.bg_buf and vim.api.nvim_buf_is_valid(state.bg_buf) then
-      ensure_bg_buf_height(state.bg_buf, editor_height)
-
-      vim.bo[state.bg_buf].modifiable = true
-      vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { "" })
-      vim.bo[state.bg_buf].modifiable = false
-
-      vim.api.nvim_buf_clear_namespace(state.bg_buf, counter_ns, 0, -1)
-      local ok = pcall(vim.api.nvim_buf_set_extmark, state.bg_buf, counter_ns, editor_height - 1, 0, {
-        virt_text = { { counter_line, "Comment" } },
-        virt_text_pos = "right_align",
-      })
-
-      if not ok then
-        local pad = math.max(0, editor_width - vim.fn.strdisplaywidth(counter_line))
-        vim.bo[state.bg_buf].modifiable = true
-        vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { string.rep(" ", pad) .. counter_line })
-        vim.bo[state.bg_buf].modifiable = false
-      end
-    end
-
-    local max_w = 1
-    for _, line in ipairs(slide_lines) do
-      max_w = math.max(max_w, vim.fn.strdisplaywidth(line))
-    end
-
-    local content_height = math.max(1, #slide_lines)
-
-    local win_width = math.min(editor_width, math.max(1, max_w))
-    local win_height = math.min(editor_height, content_height)
-
-    local col = math.floor((editor_width - win_width) / 2)
-    local row = math.floor((editor_height - win_height) / 2)
-
+    local height = math.max(1, editor_height)
     pcall(vim.api.nvim_win_set_config, win, {
       relative = "editor",
-      width = win_width,
-      height = win_height,
-      col = col,
-      row = row,
+      width = editor_width,
+      height = height,
+      col = 0,
+      row = 0,
     })
 
-    local output = (#slide_lines > 0) and slide_lines or { "" }
+    local output = M.build_fullscreen_lines(slide_lines, state.output_lines, height)
 
     vim.bo[buf].modifiable = true
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
     vim.bo[buf].modifiable = false
+
+    vim.api.nvim_buf_clear_namespace(buf, counter_ns, 0, -1)
+    pcall(vim.api.nvim_buf_set_extmark, buf, counter_ns, height - 1, 0, {
+      virt_text = { { counter_line, "Comment" } },
+      virt_text_pos = "right_align",
+    })
 
     return
   end
@@ -269,7 +316,8 @@ function M.render(slide_lines, current, total)
   local win_height = vim.api.nvim_win_get_height(win)
 
   -- Vertical centering: total content = slide lines + 2 (blank + counter)
-  local content_height = #slide_lines + 2
+  local output_block = build_output_block(state.output_lines)
+  local content_height = #slide_lines + #output_block + 2
   local v_pad = math.max(0, math.floor((win_height - content_height) / 2))
 
   -- Build final buffer content
@@ -278,6 +326,9 @@ function M.render(slide_lines, current, total)
     table.insert(output, "")
   end
   for _, line in ipairs(slide_lines) do
+    table.insert(output, line)
+  end
+  for _, line in ipairs(output_block) do
     table.insert(output, line)
   end
   table.insert(output, "")

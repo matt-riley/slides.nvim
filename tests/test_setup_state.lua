@@ -27,6 +27,7 @@ state_set["resets state fields"] = function()
   state.current = 2
   state.fragments = { { "a" } }
   state.fragment_index = 2
+  state.output_lines = { "out" }
   state.buf = 12
   state.win = 34
   state.bg_buf = 56
@@ -40,6 +41,7 @@ state_set["resets state fields"] = function()
   MiniTest.expect.equality(state.current, 1)
   MiniTest.expect.equality(state.fragments, {})
   MiniTest.expect.equality(state.fragment_index, 1)
+  MiniTest.expect.equality(state.output_lines, nil)
   MiniTest.expect.equality(state.buf, nil)
   MiniTest.expect.equality(state.win, nil)
   MiniTest.expect.equality(state.bg_buf, nil)

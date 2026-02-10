@@ -5,6 +5,7 @@ local M = {
   current = 1,
   fragments = {},
   fragment_index = 1,
+  output_lines = nil,
   buf = nil,
   win = nil,
   bg_buf = nil,
@@ -19,6 +20,7 @@ function M.reset()
   M.current = 1
   M.fragments = {}
   M.fragment_index = 1
+  M.output_lines = nil
   M.buf = nil
   M.win = nil
   M.bg_buf = nil
