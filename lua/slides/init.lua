@@ -14,12 +14,6 @@ function M.setup(opts)
     fullscreen = true,
     width = 0.8,
     height = 0.8,
-    images = {
-      enabled = false,
-      download_remote = true,
-      max_width_window_percentage = 100,
-      max_height_window_percentage = 50,
-    },
   }, opts or {})
 end
 
