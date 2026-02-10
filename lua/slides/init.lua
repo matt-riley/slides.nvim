@@ -21,6 +21,7 @@ end
 function M.toggle()
   if state.active then
     renderer.close()
+    pcall(vim.api.nvim_del_augroup_by_name, "SlidesLiveReload")
     state.reset()
     return
   end
@@ -42,8 +43,92 @@ function M.toggle()
   local opts = { noremap = true, silent = true, buffer = buf }
   vim.keymap.set("n", "l", function() M.next_slide() end, opts)
   vim.keymap.set("n", "h", function() M.prev_slide() end, opts)
+  vim.keymap.set("n", "<C-e>", function() M.execute_code() end, opts)
   vim.keymap.set("n", "q", function() M.toggle() end, opts)
   vim.keymap.set("n", "<Escape>", function() M.toggle() end, opts)
+
+  -- Live reload
+  local group = vim.api.nvim_create_augroup("SlidesLiveReload", { clear = true })
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    buffer = source_buf,
+    callback = function()
+      M.refresh()
+    end,
+  })
+end
+
+--- Refresh the current presentation from the source buffer.
+function M.refresh()
+  if not state.active or not state.source_buf then return end
+
+  local lines = vim.api.nvim_buf_get_lines(state.source_buf, 0, -1, false)
+  local slides = parser.parse(lines)
+
+  state.slides = slides
+  if state.current > #slides then
+    state.current = #slides
+  end
+
+  renderer.render(state.slides[state.current], state.current, #state.slides)
+end
+
+--- Execute the first code block in the current slide.
+function M.execute_code()
+  if not state.active or not state.buf then return end
+
+  local current_slide = state.slides[state.current]
+  local blocks = parser.find_code_blocks(current_slide)
+
+  if #blocks == 0 then
+    print("No code blocks found on this slide.")
+    return
+  end
+
+  local block = blocks[1]
+  local output = {}
+
+  if block.lang == "lua" then
+    local code = table.concat(block.code, "\n")
+    -- Capture print output? Complex. For now just run it.
+    -- Or use redirect.
+    local captured = vim.fn.execute("lua " .. code)
+    for line in captured:gmatch("[^\r\n]+") do
+      table.insert(output, line)
+    end
+  elseif block.lang == "bash" or block.lang == "sh" then
+    local code = table.concat(block.code, "\n")
+    local result = vim.fn.system(code)
+    for line in result:gmatch("[^\r\n]+") do
+      table.insert(output, line)
+    end
+  elseif block.lang == "python" or block.lang == "python3" then
+    local code = table.concat(block.code, "\n")
+    local result = vim.fn.system("python3 -c " .. vim.fn.shellescape(code))
+    for line in result:gmatch("[^\r\n]+") do
+      table.insert(output, line)
+    end
+  else
+    print("Unsupported language: " .. (block.lang or "unknown"))
+    return
+  end
+
+  -- Append output to buffer
+  local buf = state.buf
+  local line_count = vim.api.nvim_buf_line_count(buf)
+  
+  -- Remove previous output if it looks like output?
+  -- For now just append.
+  
+  local display_lines = { "", "--- Output ---" }
+  for _, line in ipairs(output) do
+    table.insert(display_lines, line)
+  end
+  table.insert(display_lines, "--------------")
+
+  vim.bo[buf].modifiable = true
+  vim.api.nvim_buf_set_lines(buf, line_count, -1, false, display_lines)
+  vim.bo[buf].modifiable = false
 end
 
 --- Advance to the next slide.

@@ -8,6 +8,9 @@ A tiny Neovim plugin for presenting Markdown slides in a full-screen floating wi
 - Renders in a full-screen floating window (configurable)
 - Slide counter
 - Syntax highlighting
+- Live reload on file save
+- Execute code blocks with `<C-e>`
+- Pre-process content with `~~~` blocks
 - Toggle the viewer with `:Slides`
 
 ## Installation
@@ -44,6 +47,7 @@ use { "mattriley/slides.nvim", config = function() require("slides").setup() end
 | --- | ------ |
 | `l` | Next slide |
 | `h` | Previous slide |
+| `<C-e>` | Execute code block |
 | `q` | Quit viewer |
 | `<Esc>` | Quit viewer |
 
@@ -57,6 +61,21 @@ require("slides").setup({
   -- height = 0.8,
 })
 ```
+
+## Dynamic Content
+
+### Code Execution
+
+Press `<C-e>` to execute the first code block on the current slide. Supported languages: `lua`, `bash`, `sh`, `python`. The output is appended to the slide.
+
+### Pre-processing
+
+Use `~~~command` blocks to generate content dynamically. For example:
+
+    ~~~date
+    ~~~
+
+This will replace the block with the output of the `date` command before rendering.
 
 Available options:
 
