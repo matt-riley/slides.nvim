@@ -133,8 +133,9 @@ local function trim_output_lines(output_lines, max_lines)
   return trimmed
 end
 
-function M.build_fullscreen_lines(slide_lines, output_lines, height)
+function M.build_fullscreen_lines(slide_lines, output_lines, height, width)
   height = math.max(1, height)
+  width = math.max(1, width or 1)
 
   local output_block = {}
   if output_lines ~= nil then
@@ -160,11 +161,26 @@ function M.build_fullscreen_lines(slide_lines, output_lines, height)
   local v_pad = math.max(0, math.floor((available_height - #content) / 2))
   local bottom_pad = available_height - #content - v_pad
 
+  local centered = {}
+  for _, line in ipairs(content) do
+    if line == "" then
+      table.insert(centered, "")
+    else
+      local line_width = vim.fn.strdisplaywidth(line)
+      if line_width >= width then
+        table.insert(centered, line)
+      else
+        local pad = math.floor((width - line_width) / 2)
+        table.insert(centered, string.rep(" ", pad) .. line)
+      end
+    end
+  end
+
   local lines = {}
   for _ = 1, v_pad do
     table.insert(lines, "")
   end
-  for _, line in ipairs(content) do
+  for _, line in ipairs(centered) do
     table.insert(lines, line)
   end
   for _ = 1, bottom_pad do
@@ -298,7 +314,7 @@ function M.render(slide_lines, current, total)
       row = 0,
     })
 
-    local output = M.build_fullscreen_lines(slide_lines, state.output_lines, height)
+    local output = M.build_fullscreen_lines(slide_lines, state.output_lines, height, editor_width)
 
     vim.bo[buf].modifiable = true
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
