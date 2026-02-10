@@ -59,6 +59,18 @@ require("slides").setup({
 })
 ```
 
+Install image.nvim alongside slides.nvim (lazy.nvim example):
+
+```lua
+{
+  "mattriley/slides.nvim",
+  opts = { images = { enabled = true } },
+  dependencies = {
+    { "3rd/image.nvim", opts = {} },
+  },
+}
+```
+
 Remote URLs require `curl`. See image.nvim for ImageMagick and terminal requirements.
 
 ## Keybindings
