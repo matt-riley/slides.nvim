@@ -1,6 +1,7 @@
 local M = {}
 
 local notified = {}
+local namespace = "slides.nvim"
 local render_generation = 0
 
 local function notify_once(key, message)
@@ -128,6 +129,7 @@ function M.render(entries, opts)
   local base_opts = {
     window = opts.window,
     buffer = opts.buffer,
+    namespace = namespace,
     inline = true,
     with_virtual_padding = true,
     max_width_window_percentage = opts.max_width_window_percentage,
@@ -167,6 +169,13 @@ end
 
 function M.clear(handles)
   render_generation = render_generation + 1
+  local api = image_api()
+  if api then
+    local images = api.get_images({ namespace = namespace })
+    for _, image in ipairs(images) do
+      pcall(image.clear, image)
+    end
+  end
   if not handles then return end
   for _, image in ipairs(handles) do
     pcall(image.clear, image)
