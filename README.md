@@ -74,11 +74,11 @@ Slides are split on `---`.
 
 ## Testing
 
-Tests use [plenary.nvim](https://github.com/nvim-lua/plenary.nvim). Ensure it is installed (or set
-`PLENARY_PATH` to a local checkout), then run:
+Tests use [mini.test](https://github.com/echasnovski/mini.nvim). Ensure mini.nvim is installed
+(or set `MINI_PATH` to a local checkout), then run:
 
 ```bash
-PLENARY_PATH=/path/to/plenary.nvim \
+MINI_PATH=/path/to/mini.nvim \
   nvim --headless -u tests/minimal_init.lua \
-  -c "PlenaryBustedDirectory tests/ { minimal_init = 'tests/minimal_init.lua' }"
+  -c "lua MiniTest.run({})" -c "qa"
 ```

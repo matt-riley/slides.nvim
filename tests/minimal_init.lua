@@ -1,14 +1,14 @@
 vim.opt.runtimepath:prepend(vim.fn.getcwd())
 
-local function add_plenary()
+local function add_mini()
   local paths = {}
-  if vim.env.PLENARY_PATH and vim.env.PLENARY_PATH ~= "" then
-    table.insert(paths, vim.env.PLENARY_PATH)
+  if vim.env.MINI_PATH and vim.env.MINI_PATH ~= "" then
+    table.insert(paths, vim.env.MINI_PATH)
   end
 
   local data_dir = vim.fn.stdpath("data")
-  table.insert(paths, data_dir .. "/site/pack/packer/start/plenary.nvim")
-  table.insert(paths, data_dir .. "/site/pack/lazy/start/plenary.nvim")
+  table.insert(paths, data_dir .. "/site/pack/packer/start/mini.nvim")
+  table.insert(paths, data_dir .. "/site/pack/lazy/start/mini.nvim")
 
   for _, path in ipairs(paths) do
     if vim.loop.fs_stat(path) then
@@ -17,7 +17,14 @@ local function add_plenary()
     end
   end
 
-  error("plenary.nvim not found. Set PLENARY_PATH or install plenary.nvim.")
+  error("mini.nvim not found. Set MINI_PATH or install mini.nvim.")
 end
 
-add_plenary()
+add_mini()
+
+local minitest = require("mini.test")
+minitest.setup({
+  execute = {
+    reporter = minitest.gen_reporter.stdout(),
+  },
+})
