@@ -133,9 +133,16 @@ local function trim_output_lines(output_lines, max_lines)
   return trimmed
 end
 
-function M.build_fullscreen_lines(slide_lines, output_lines, height, width)
+local function max_display_width(lines)
+  local max_w = 1
+  for _, line in ipairs(lines) do
+    max_w = math.max(max_w, vim.fn.strdisplaywidth(line))
+  end
+  return max_w
+end
+
+function M.build_fullscreen_lines(slide_lines, output_lines, height)
   height = math.max(1, height)
-  width = math.max(1, width or 1)
 
   local output_block = {}
   if output_lines ~= nil then
@@ -161,26 +168,11 @@ function M.build_fullscreen_lines(slide_lines, output_lines, height, width)
   local v_pad = math.max(0, math.floor((available_height - #content) / 2))
   local bottom_pad = available_height - #content - v_pad
 
-  local centered = {}
-  for _, line in ipairs(content) do
-    if line == "" then
-      table.insert(centered, "")
-    else
-      local line_width = vim.fn.strdisplaywidth(line)
-      if line_width >= width then
-        table.insert(centered, line)
-      else
-        local pad = math.floor((width - line_width) / 2)
-        table.insert(centered, string.rep(" ", pad) .. line)
-      end
-    end
-  end
-
   local lines = {}
   for _ = 1, v_pad do
     table.insert(lines, "")
   end
-  for _, line in ipairs(centered) do
+  for _, line in ipairs(content) do
     table.insert(lines, line)
   end
   for _ = 1, bottom_pad do
@@ -306,25 +298,42 @@ function M.render(slide_lines, current, total)
 
   if fullscreen then
     local height = math.max(1, editor_height)
+    if state.bg_buf and vim.api.nvim_buf_is_valid(state.bg_buf) then
+      ensure_bg_buf_height(state.bg_buf, editor_height)
+
+      vim.bo[state.bg_buf].modifiable = true
+      vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { "" })
+      vim.bo[state.bg_buf].modifiable = false
+
+      vim.api.nvim_buf_clear_namespace(state.bg_buf, counter_ns, 0, -1)
+      local ok = pcall(vim.api.nvim_buf_set_extmark, state.bg_buf, counter_ns, editor_height - 1, 0, {
+        virt_text = { { counter_line, "Comment" } },
+        virt_text_pos = "right_align",
+      })
+
+      if not ok then
+        local pad = math.max(0, editor_width - vim.fn.strdisplaywidth(counter_line))
+        vim.bo[state.bg_buf].modifiable = true
+        vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { string.rep(" ", pad) .. counter_line })
+        vim.bo[state.bg_buf].modifiable = false
+      end
+    end
+
+    local output = M.build_fullscreen_lines(slide_lines, state.output_lines, height)
+    local win_width = math.min(editor_width, max_display_width(output))
+    local col = math.floor((editor_width - win_width) / 2)
+
     pcall(vim.api.nvim_win_set_config, win, {
       relative = "editor",
-      width = editor_width,
+      width = win_width,
       height = height,
-      col = 0,
+      col = col,
       row = 0,
     })
-
-    local output = M.build_fullscreen_lines(slide_lines, state.output_lines, height, editor_width)
 
     vim.bo[buf].modifiable = true
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
     vim.bo[buf].modifiable = false
-
-    vim.api.nvim_buf_clear_namespace(buf, counter_ns, 0, -1)
-    pcall(vim.api.nvim_buf_set_extmark, buf, counter_ns, height - 1, 0, {
-      virt_text = { { counter_line, "Comment" } },
-      virt_text_pos = "right_align",
-    })
 
     return
   end

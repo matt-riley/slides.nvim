@@ -4,7 +4,7 @@ local T = MiniTest.new_set()
 local renderer = require("slides.renderer")
 
 T["build_fullscreen_lines places output footer"] = function()
-  local lines = renderer.build_fullscreen_lines({ "Title" }, { "out" }, 8, 20)
+  local lines = renderer.build_fullscreen_lines({ "Title" }, { "out" }, 8)
 
   MiniTest.expect.equality(#lines, 8)
   MiniTest.expect.equality(lines[#lines], "--------------")
@@ -13,7 +13,7 @@ T["build_fullscreen_lines places output footer"] = function()
 end
 
 T["build_fullscreen_lines trims output to fit"] = function()
-  local lines = renderer.build_fullscreen_lines({ "Title" }, { "1", "2", "3", "4" }, 6, 20)
+  local lines = renderer.build_fullscreen_lines({ "Title" }, { "1", "2", "3", "4" }, 6)
 
   MiniTest.expect.equality(#lines, 6)
   MiniTest.expect.equality(lines[#lines], "--------------")
@@ -22,10 +22,10 @@ T["build_fullscreen_lines trims output to fit"] = function()
   MiniTest.expect.equality(lines[#lines - 3], "--- Output ---")
 end
 
-T["build_fullscreen_lines centers content"] = function()
-  local lines = renderer.build_fullscreen_lines({ "Hi" }, nil, 5, 10)
+T["build_fullscreen_lines keeps content unpadded"] = function()
+  local lines = renderer.build_fullscreen_lines({ "Hi" }, nil, 5)
 
-  MiniTest.expect.equality(lines[3], "    Hi")
+  MiniTest.expect.equality(lines[3], "Hi")
 end
 
 return T
