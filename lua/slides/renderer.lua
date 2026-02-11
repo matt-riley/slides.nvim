@@ -259,6 +259,11 @@ function M.open()
   vim.wo[win].wrap = true
   vim.wo[win].linebreak = true
   vim.wo[win].fillchars = "eob: "
+  vim.wo[win].number = false
+  vim.wo[win].relativenumber = false
+  vim.wo[win].signcolumn = "no"
+  vim.wo[win].foldcolumn = "0"
+  vim.wo[win].statuscolumn = ""
   pcall(apply_header_winhl, win)
 
   state.buf = buf

@@ -56,6 +56,9 @@ toggle_set["opens and closes the viewer"] = function()
   MiniTest.expect.equality(state.current, 1)
   MiniTest.expect.equality(state.win ~= nil, true)
   MiniTest.expect.equality(vim.api.nvim_win_is_valid(state.win), true)
+  MiniTest.expect.equality(vim.wo[state.win].signcolumn, "no")
+  MiniTest.expect.equality(vim.wo[state.win].number, false)
+  MiniTest.expect.equality(vim.wo[state.win].relativenumber, false)
 
   slides.toggle()
 
