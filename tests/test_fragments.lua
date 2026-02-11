@@ -41,7 +41,7 @@ local fragment_set = MiniTest.new_set({
 
 fragment_set["builds fragments from separators"] = function()
   slides.setup()
-  local fragments = parser.build_fragments({ "A", "++", "B", "++", "C" })
+  local fragments = parser.build_fragments({ "A", "  ++  ", "B", "\t++", "C" })
 
   MiniTest.expect.equality(fragments, {
     { "A" },

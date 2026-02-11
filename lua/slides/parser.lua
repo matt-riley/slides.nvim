@@ -149,7 +149,7 @@ end
 --- @return string[][] List of fragments
 function M.build_fragments(lines)
   local slides_mod = package.loaded["slides"]
-  local separator = (slides_mod and slides_mod.config and slides_mod.config.fragment_separator) or "^%+%++$"
+  local separator = (slides_mod and slides_mod.config and slides_mod.config.fragment_separator) or "^%s*%+%+%+*%s*$"
 
   local groups = { {} }
   for _, line in ipairs(lines) do

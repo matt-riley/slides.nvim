@@ -71,7 +71,7 @@ Press `<C-e>` to execute the first code block on the current slide. Supported la
 
 ### Fragments/Reveals
 
-Use `++` on its own line to reveal content in steps within a slide. The next/previous slide keys advance through fragments before changing slides.
+Use a line containing only `++` (whitespace is ok) to reveal content in steps within a slide. The next/previous slide keys advance through fragments before changing slides.
 
 ```markdown
 - Item 1
@@ -96,7 +96,7 @@ Available options:
 - `border`: floating window border style (used when fullscreen = false)
 - `width`: floating window width (number, used when fullscreen = false)
 - `height`: floating window height (number, used when fullscreen = false)
-- `fragment_separator`: pattern for fragment separators (default: `^%+%++$`)
+- `fragment_separator`: pattern for fragment separators (default: `^%s*%+%+%+*%s*$`)
 
 Slides are split on `---`.
 

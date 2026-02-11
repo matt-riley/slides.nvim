@@ -12,7 +12,7 @@ setup_set["applies defaults and overrides"] = function()
   MiniTest.expect.equality(slides.config.fullscreen, false)
   MiniTest.expect.equality(slides.config.border, "single")
   MiniTest.expect.equality(slides.config.separator, "^%-%-%-+$")
-  MiniTest.expect.equality(slides.config.fragment_separator, "^%+%++$")
+  MiniTest.expect.equality(slides.config.fragment_separator, "^%s*%+%+%+*%s*$")
   MiniTest.expect.equality(slides.config.width, 0.8)
   MiniTest.expect.equality(slides.config.height, 0.8)
 end

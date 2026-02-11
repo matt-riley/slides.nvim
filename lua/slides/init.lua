@@ -26,7 +26,7 @@ end
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", {
     separator = "^%-%-%-+$",
-    fragment_separator = "^%+%++$",
+    fragment_separator = "^%s*%+%+%+*%s*$",
     border = "rounded",
     fullscreen = true,
     width = 0.8,
