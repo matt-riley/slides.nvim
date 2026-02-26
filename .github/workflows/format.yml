@@ -1,0 +1,9 @@
+name: Format
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  format:
+    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-format.yml@main
