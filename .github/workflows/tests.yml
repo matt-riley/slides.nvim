@@ -6,15 +6,4 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Neovim
-        run: sudo apt-get update && sudo apt-get install -y neovim
-      - name: Fetch mini.nvim
-        run: git clone --depth 1 https://github.com/echasnovski/mini.nvim "${GITHUB_WORKSPACE}/.ci/mini.nvim"
-      - name: Run tests
-        env:
-          MINI_PATH: ${{ github.workspace }}/.ci/mini.nvim
-        run: nvim --headless -u tests/minimal_init.lua -c "lua MiniTest.run({})" -c "qa"
+    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-tests.yml@main
