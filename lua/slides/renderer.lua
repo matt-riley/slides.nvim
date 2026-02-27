@@ -5,6 +5,8 @@ local state = require("slides.state")
 
 local counter_ns = vim.api.nvim_create_namespace("slides_counter")
 
+---@param buf integer?
+---@param height integer
 local function ensure_bg_buf_height(buf, height)
   if not buf or not vim.api.nvim_buf_is_valid(buf) then
     return
@@ -29,7 +31,9 @@ local function ensure_bg_buf_height(buf, height)
   vim.bo[buf].modifiable = false
 end
 
+---@param win integer
 local function apply_header_winhl(win)
+  ---@type table<string, string>
   local remaps = {}
   local function add(from, to)
     if vim.fn.hlexists(from) == 1 then
@@ -114,6 +118,8 @@ local function apply_header_winhl(win)
   vim.wo[win].winhl = table.concat(parts, ",")
 end
 
+---@param output_lines string[]?
+---@return string[]
 local function build_output_block(output_lines)
   if output_lines == nil then
     return {}
@@ -128,6 +134,9 @@ local function build_output_block(output_lines)
   return block
 end
 
+---@param output_lines string[]?
+---@param max_lines integer
+---@return string[]?
 local function trim_output_lines(output_lines, max_lines)
   if output_lines == nil or #output_lines <= max_lines then
     return output_lines
@@ -141,6 +150,8 @@ local function trim_output_lines(output_lines, max_lines)
   return trimmed
 end
 
+---@param lines string[]
+---@return integer
 local function max_display_width(lines)
   local max_w = 1
   for _, line in ipairs(lines) do
@@ -149,6 +160,10 @@ local function max_display_width(lines)
   return max_w
 end
 
+---@param slide_lines string[]
+---@param output_lines string[]?
+---@param height integer
+---@return string[]
 function M.build_fullscreen_lines(slide_lines, output_lines, height)
   height = math.max(1, height)
 

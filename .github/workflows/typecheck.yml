@@ -1,0 +1,49 @@
+name: Typecheck
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install LuaLS
+        run: |
+          mkdir -p "${RUNNER_TEMP}/luals"
+          curl -fsSL \
+            "https://github.com/LuaLS/lua-language-server/releases/download/3.13.6/lua-language-server-3.13.6-linux-x64.tar.gz" \
+            | tar -xz -C "${RUNNER_TEMP}/luals"
+
+      - name: Run type check
+        run: |
+          mkdir -p "${RUNNER_TEMP}/luals-log"
+          "${RUNNER_TEMP}/luals/bin/lua-language-server" \
+            --check=. \
+            --checklevel=Warning \
+            --logpath="${RUNNER_TEMP}/luals-log"
+
+      - name: Fail if diagnostics exist
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import pathlib
+          import sys
+
+          path = pathlib.Path(os.environ["RUNNER_TEMP"]) / "luals-log" / "check.json"
+          if not path.exists():
+              print("No LuaLS diagnostics file generated.")
+              sys.exit(0)
+
+          data = json.loads(path.read_text() or "[]")
+          if len(data) == 0:
+              print("LuaLS diagnostics: none")
+              sys.exit(0)
+
+          print(json.dumps(data, indent=2))
+          sys.exit(1)
+          PY

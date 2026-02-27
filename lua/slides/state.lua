@@ -1,4 +1,17 @@
 -- lua/slides/state.lua
+---@class slides.State
+---@field active boolean Whether presentation mode is active.
+---@field slides string[][] Parsed slides.
+---@field current integer Current slide index (1-based).
+---@field fragments string[][] Current slide fragments.
+---@field fragment_index integer Current fragment index (1-based).
+---@field output_lines string[]? Output lines from code execution.
+---@field buf integer? Presentation buffer handle.
+---@field win integer? Presentation window handle.
+---@field bg_buf integer? Fullscreen background buffer handle.
+---@field bg_win integer? Fullscreen background window handle.
+---@field source_buf integer? Source markdown buffer handle.
+---@type slides.State
 local M = {
   active = false,
   slides = {},

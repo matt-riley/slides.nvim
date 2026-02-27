@@ -46,6 +46,7 @@ local defaults = {
 ---@type slides.Config
 M.config = vim.deepcopy(defaults)
 
+---@private
 local function update_fragments()
   state.fragments = parser.build_fragments(state.slides[state.current] or {}, M.config)
   if #state.fragments == 0 then
@@ -58,6 +59,7 @@ local function update_fragments()
   end
 end
 
+---@private
 local function render_current()
   renderer.render(state.fragments[state.fragment_index], state.current, #state.slides, M.config)
 end
@@ -175,14 +177,20 @@ function M.execute_code()
   end
 
   local block = blocks[1]
+  ---@type string[]
   local output = {}
 
+  ---@param result string
   local function append_output(result)
     for line in result:gmatch("[^\r\n]+") do
       table.insert(output, line)
     end
   end
 
+  ---@param ext string
+  ---@param cmd string
+  ---@param code_lines string[]
+  ---@return string
   local function run_tempfile(ext, cmd, code_lines)
     local tmp = vim.fn.tempname() .. ext
     vim.fn.writefile(code_lines, tmp)

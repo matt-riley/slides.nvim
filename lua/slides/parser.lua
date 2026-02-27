@@ -1,6 +1,10 @@
 -- lua/slides/parser.lua
 local M = {}
 
+---@class slides.CodeBlock
+---@field lang string
+---@field code string[]
+
 --- Remove leading and trailing empty lines from a list of lines.
 --- @param lines string[]
 --- @return string[]
@@ -23,6 +27,9 @@ local function trim_blank_lines(lines)
   return trimmed
 end
 
+---@param cmd string
+---@param input_lines string[]
+---@return string[]
 local function execute_preprocessor(cmd, input_lines)
   local input = table.concat(input_lines, "\n")
   local output = vim.fn.system(cmd, input)
@@ -33,6 +40,8 @@ local function execute_preprocessor(cmd, input_lines)
   return result_lines
 end
 
+---@param lines string[]
+---@return string[]
 local function preprocess(lines)
   local new_lines = {}
   local in_block = false
@@ -115,8 +124,9 @@ end
 
 --- Find code blocks in a list of lines.
 --- @param lines string[]
---- @return table[] List of { lang = string, code = string[] }
+--- @return slides.CodeBlock[] List of fenced code blocks.
 function M.find_code_blocks(lines)
+  ---@type slides.CodeBlock[]
   local blocks = {}
   local current_lang = nil
   local current_code = {}
