@@ -6,11 +6,15 @@ local state = require("slides.state")
 local counter_ns = vim.api.nvim_create_namespace("slides_counter")
 
 local function ensure_bg_buf_height(buf, height)
-  if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
+  if not buf or not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
   height = math.max(1, height)
 
   local cur = vim.api.nvim_buf_line_count(buf)
-  if cur == height then return end
+  if cur == height then
+    return
+  end
 
   vim.bo[buf].modifiable = true
   if cur < height then
@@ -28,7 +32,9 @@ end
 local function apply_header_winhl(win)
   local remaps = {}
   local function add(from, to)
-    if vim.fn.hlexists(from) == 1 then remaps[from] = to end
+    if vim.fn.hlexists(from) == 1 then
+      remaps[from] = to
+    end
   end
 
   for i = 1, 6 do
@@ -51,7 +57,9 @@ local function apply_header_winhl(win)
   if cur and cur ~= "" then
     for part in string.gmatch(cur, "[^,]+") do
       local from = part:match("^([^:]+):")
-      if not (from and remaps[from]) then table.insert(parts, part) end
+      if not (from and remaps[from]) then
+        table.insert(parts, part)
+      end
     end
   end
 
@@ -279,8 +287,12 @@ function M.render(slide_lines, current, total, config)
   local buf = state.buf
   local win = state.win
 
-  if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
-  if not win or not vim.api.nvim_win_is_valid(win) then return end
+  if not buf or not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
+  if not win or not vim.api.nvim_win_is_valid(win) then
+    return
+  end
 
   local cfg = config or {}
   local fullscreen = cfg.fullscreen ~= false
@@ -319,7 +331,13 @@ function M.render(slide_lines, current, total, config)
       if not ok then
         local pad = math.max(0, editor_width - vim.fn.strdisplaywidth(counter_line))
         vim.bo[state.bg_buf].modifiable = true
-        vim.api.nvim_buf_set_lines(state.bg_buf, editor_height - 1, editor_height, false, { string.rep(" ", pad) .. counter_line })
+        vim.api.nvim_buf_set_lines(
+          state.bg_buf,
+          editor_height - 1,
+          editor_height,
+          false,
+          { string.rep(" ", pad) .. counter_line }
+        )
         vim.bo[state.bg_buf].modifiable = false
       end
     end

@@ -14,12 +14,12 @@ T["find_code_blocks"] = function()
     "",
     "```bash",
     "echo world",
-    "```"
+    "```",
   }
 
   local blocks = parser.find_code_blocks(lines)
   MiniTest.expect.equality(#blocks, 2)
-  
+
   MiniTest.expect.equality(blocks[1].lang, "lua")
   MiniTest.expect.equality(blocks[1].code, { "print('hello')" })
 

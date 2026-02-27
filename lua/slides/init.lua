@@ -114,11 +114,21 @@ function M.toggle()
   -- Buffer-local keymaps for navigation
   local buf = state.buf
   local opts = { noremap = true, silent = true, buffer = buf }
-  vim.keymap.set("n", "l", function() M.next_slide() end, opts)
-  vim.keymap.set("n", "h", function() M.prev_slide() end, opts)
-  vim.keymap.set("n", "<C-e>", function() M.execute_code() end, opts)
-  vim.keymap.set("n", "q", function() M.toggle() end, opts)
-  vim.keymap.set("n", "<Escape>", function() M.toggle() end, opts)
+  vim.keymap.set("n", "l", function()
+    M.next_slide()
+  end, opts)
+  vim.keymap.set("n", "h", function()
+    M.prev_slide()
+  end, opts)
+  vim.keymap.set("n", "<C-e>", function()
+    M.execute_code()
+  end, opts)
+  vim.keymap.set("n", "q", function()
+    M.toggle()
+  end, opts)
+  vim.keymap.set("n", "<Escape>", function()
+    M.toggle()
+  end, opts)
 
   -- Live reload
   local group = vim.api.nvim_create_augroup("SlidesLiveReload", { clear = true })
@@ -133,7 +143,9 @@ end
 
 --- Refresh the active presentation from the source buffer.
 function M.refresh()
-  if not state.active or not state.source_buf then return end
+  if not state.active or not state.source_buf then
+    return
+  end
 
   local lines = vim.api.nvim_buf_get_lines(state.source_buf, 0, -1, false)
   local slides = parser.parse(lines, M.config)
@@ -150,7 +162,9 @@ end
 
 --- Execute the first fenced code block in the current slide.
 function M.execute_code()
-  if not state.active or not state.buf then return end
+  if not state.active or not state.buf then
+    return
+  end
 
   local current_slide = (state.fragments and state.fragments[state.fragment_index]) or state.slides[state.current]
   local blocks = parser.find_code_blocks(current_slide)
@@ -203,7 +217,9 @@ end
 
 --- Advance to the next fragment or slide.
 function M.next_slide()
-  if not state.active then return end
+  if not state.active then
+    return
+  end
   if state.fragment_index < #state.fragments then
     state.fragment_index = state.fragment_index + 1
     render_current()
@@ -220,7 +236,9 @@ end
 
 --- Go to the previous fragment or slide.
 function M.prev_slide()
-  if not state.active then return end
+  if not state.active then
+    return
+  end
   if state.fragment_index > 1 then
     state.fragment_index = state.fragment_index - 1
     render_current()

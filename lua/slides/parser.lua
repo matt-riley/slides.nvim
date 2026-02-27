@@ -62,7 +62,7 @@ local function preprocess(lines)
       table.insert(new_lines, line)
     end
   end
-  
+
   -- Handle unclosed block (just append raw?)
   if in_block then
     table.insert(new_lines, "~~~" .. current_cmd)

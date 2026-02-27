@@ -11,6 +11,10 @@ on:
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -25,14 +29,18 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y neovim
 
       - name: Fetch mini.nvim
-        run: git clone --depth 1 https://github.com/echasnovski/mini.nvim "${GITHUB_WORKSPACE}/.ci/mini.nvim"
+        run: |
+          rm -rf "${RUNNER_TEMP}/mini.nvim" "${RUNNER_TEMP}/mini.nvim-main"
+          curl -fsSL https://github.com/echasnovski/mini.nvim/archive/refs/heads/main.tar.gz | tar -xz -C "${RUNNER_TEMP}"
+          mv "${RUNNER_TEMP}/mini.nvim-main" "${RUNNER_TEMP}/mini.nvim"
 
       - name: Generate docs
         env:
-          MINI_PATH: ${{ github.workspace }}/.ci/mini.nvim
+          MINI_PATH: ${{ runner.temp }}/mini.nvim
         run: make docs
 
       - name: Commit docs
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore(docs): regenerate vim help"
+          file_pattern: doc/*.txt

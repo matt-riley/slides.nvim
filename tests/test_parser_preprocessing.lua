@@ -8,20 +8,20 @@ T["preprocess_blocks"] = function()
     "~~~tr a b",
     "aaa",
     "~~~",
-    "End"
+    "End",
   }
 
   local slides = parser.parse(lines)
   -- The parser splits into slides. We expect 1 slide here.
-  
+
   MiniTest.expect.equality(#slides, 1)
   local slide_lines = slides[1]
-  
+
   -- trim_blank_lines might affect indices, but output should be:
   -- Start
   -- bbb
   -- End
-  
+
   MiniTest.expect.equality(slide_lines[1], "Start")
   MiniTest.expect.equality(slide_lines[2], "bbb")
   MiniTest.expect.equality(slide_lines[3], "End")
