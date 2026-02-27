@@ -105,6 +105,11 @@ Slides are split on `---`.
 - Neovim 0.8+
 - (Optional) Treesitter Markdown parser for improved syntax highlighting
 
+## Versioning
+
+- Canonical project version is stored in [`VERSION`](VERSION).
+- `release-please` updates both `VERSION` and `CHANGELOG.md`.
+
 ## Testing
 
 Tests use [mini.test](https://github.com/echasnovski/mini.nvim). Ensure mini.nvim is installed
@@ -115,3 +120,15 @@ MINI_PATH=/path/to/mini.nvim \
   nvim --headless -u tests/minimal_init.lua \
   -c "lua MiniTest.run({})" -c "qa"
 ```
+
+## Documentation (`:help`)
+
+Help docs are generated from Lua annotations in `lua/slides/init.lua` via
+[mini.doc](https://github.com/nvim-mini/mini.doc):
+
+```bash
+make docs
+```
+
+`make docs` injects the current value from [`VERSION`](VERSION) into the
+generated vim help file.

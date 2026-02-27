@@ -1,0 +1,74 @@
+                                                                        *slides*
+slides.nvim
+
+Version: 0.1.0
+
+Present Markdown files as slides inside a floating Neovim window.
+
+Features ~
+- Split slides on `---`.
+- Reveal fragments using `++` separators.
+- Live reload after writing the source buffer.
+- Execute the first fenced code block on a slide with `<C-e>`.
+
+Usage ~
+- Open a Markdown file.
+- Run `:Slides` to toggle presentation mode.
+- Use `h`/`l` to move through fragments and slides.
+
+------------------------------------------------------------------------------
+Plugin configuration.
+Class ~
+{slides.Config}
+Fields ~
+{separator} `(string)` Pattern used to split slides.
+{fragment_separator} `(string)` Pattern used to split fragments.
+{border} `(string)` Floating window border style in non-fullscreen mode.
+{fullscreen} `(boolean)` Use fullscreen floating window.
+{width} `(number)` Floating width ratio in non-fullscreen mode.
+{height} `(number)` Floating height ratio in non-fullscreen mode.
+
+------------------------------------------------------------------------------
+                                                                     *M.setup()*
+                               `M.setup`({opts})
+Configure slides.nvim.
+
+Example:
+`require("slides").setup({ fullscreen = false, width = 0.9, height = 0.9 })`
+
+Parameters ~
+{opts} `(optional)` `(slides.Config)` User configuration options
+
+------------------------------------------------------------------------------
+                                                                    *M.toggle()*
+                                  `M.toggle`()
+Toggle presentation mode on or off.
+
+Keymaps inside the slides window:
+- `l`: next fragment/slide
+- `h`: previous fragment/slide
+- `<C-e>`: execute first fenced code block on current slide
+- `q` / `<Esc>`: close presentation
+
+------------------------------------------------------------------------------
+                                                                   *M.refresh()*
+                                 `M.refresh`()
+Refresh the active presentation from the source buffer.
+
+------------------------------------------------------------------------------
+                                                              *M.execute_code()*
+                               `M.execute_code`()
+Execute the first fenced code block in the current slide.
+
+------------------------------------------------------------------------------
+                                                                *M.next_slide()*
+                                `M.next_slide`()
+Advance to the next fragment or slide.
+
+------------------------------------------------------------------------------
+                                                                *M.prev_slide()*
+                                `M.prev_slide`()
+Go to the previous fragment or slide.
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

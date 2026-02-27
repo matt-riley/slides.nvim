@@ -189,7 +189,8 @@ function M.build_fullscreen_lines(slide_lines, output_lines, height)
 end
 
 --- Open the floating presentation window.
-function M.open()
+---@param config? slides.Config Runtime plugin configuration
+function M.open(config)
   local buf = vim.api.nvim_create_buf(false, true)
 
   vim.bo[buf].buftype = "nofile"
@@ -205,8 +206,7 @@ function M.open()
   local editor_width = vim.o.columns
   local editor_height = vim.o.lines - vim.o.cmdheight
 
-  local slides_mod = package.loaded["slides"]
-  local cfg = (slides_mod and slides_mod.config) or {}
+  local cfg = config or {}
 
   local fullscreen = cfg.fullscreen ~= false
 
@@ -271,18 +271,18 @@ function M.open()
 end
 
 --- Render a slide in the floating window.
---- @param slide_lines string[] Lines of the current slide
---- @param current number Current slide number
---- @param total number Total number of slides
-function M.render(slide_lines, current, total)
+---@param slide_lines string[] Lines of the current slide
+---@param current number Current slide number
+---@param total number Total number of slides
+---@param config? slides.Config Runtime plugin configuration
+function M.render(slide_lines, current, total, config)
   local buf = state.buf
   local win = state.win
 
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
   if not win or not vim.api.nvim_win_is_valid(win) then return end
 
-  local slides_mod = package.loaded["slides"]
-  local cfg = (slides_mod and slides_mod.config) or {}
+  local cfg = config or {}
   local fullscreen = cfg.fullscreen ~= false
 
   local editor_width = vim.o.columns

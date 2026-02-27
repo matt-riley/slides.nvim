@@ -23,7 +23,7 @@ parse_set["splits slides and trims blank lines"] = function()
     "",
   }
 
-  local result = parser.parse(input)
+  local result = parser.parse(input, slides.config)
 
   MiniTest.expect.equality(result, {
     { "# Slide 1" },
@@ -32,7 +32,7 @@ parse_set["splits slides and trims blank lines"] = function()
 end
 
 parse_set["returns at least one slide for empty input"] = function()
-  local result = parser.parse({ "---" })
+  local result = parser.parse({ "---" }, slides.config)
 
   MiniTest.expect.equality(result, { {} })
 end
@@ -40,7 +40,7 @@ end
 parse_set["respects custom separators"] = function()
   slides.setup({ separator = "^===+$" })
 
-  local result = parser.parse({ "A", "===", "B" })
+  local result = parser.parse({ "A", "===", "B" }, slides.config)
 
   MiniTest.expect.equality(result, {
     { "A" },

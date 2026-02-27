@@ -1,0 +1,18 @@
+name: Release Please Guard
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  guard:
+    uses: matt-riley/matt-riley-ci/.github/workflows/release-please-guard.yml@v1
+    with:
+      main-branch: main
+      release-please-workflow: release-please.yml

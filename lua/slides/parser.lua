@@ -74,18 +74,18 @@ local function preprocess(lines)
   return new_lines
 end
 
---- Parse buffer lines into slides, splitting on --- separators.
---- @param lines string[] Buffer lines
---- @return string[][] List of slides (each slide is a list of lines)
-function M.parse(lines)
+--- Parse buffer lines into slides, splitting on slide separators.
+---@param lines string[] Buffer lines
+---@param config? slides.Config Runtime plugin configuration
+---@return string[][] slides List of slides (each slide is a list of lines)
+function M.parse(lines, config)
   -- Run preprocessors first
   lines = preprocess(lines)
 
   local slides = {}
   local current = {}
 
-  local slides_mod = package.loaded["slides"]
-  local separator = (slides_mod and slides_mod.config and slides_mod.config.separator) or "^%-%-%-+$"
+  local separator = (config and config.separator) or "^%-%-%-+$"
 
   for _, line in ipairs(lines) do
     if line:match(separator) then
@@ -145,11 +145,11 @@ function M.find_code_blocks(lines)
 end
 
 --- Build incremental fragments from a slide.
---- @param lines string[]
---- @return string[][] List of fragments
-function M.build_fragments(lines)
-  local slides_mod = package.loaded["slides"]
-  local separator = (slides_mod and slides_mod.config and slides_mod.config.fragment_separator) or "^%s*%+%+%+*%s*$"
+---@param lines string[]
+---@param config? slides.Config Runtime plugin configuration
+---@return string[][] fragments List of fragments
+function M.build_fragments(lines, config)
+  local separator = (config and config.fragment_separator) or "^%s*%+%+%+*%s*$"
 
   local groups = { {} }
   for _, line in ipairs(lines) do
