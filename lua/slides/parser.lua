@@ -54,7 +54,7 @@ local function preprocess(lines)
 
     if in_block then
       if end_block then
-        local output = execute_preprocessor(current_cmd, block_lines)
+        local output = execute_preprocessor(assert(current_cmd, "preprocessor command missing"), block_lines)
         for _, l in ipairs(output) do
           table.insert(new_lines, l)
         end
