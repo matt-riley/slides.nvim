@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   guard:
-    uses: matt-riley/matt-riley-ci/.github/workflows/release-please-guard.yml@v1
+    uses: matt-riley/matt-riley-ci/.github/workflows/release-please-guard.yml@7bf33bf0eef269c4a4b1d85e1668dec14fb8ffff # v1
     with:
       main-branch: main
       release-please-workflow: release-please.yml
