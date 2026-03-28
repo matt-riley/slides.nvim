@@ -8,4 +8,4 @@ on:
 
 jobs:
   lint:
-    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-lint.yml@2bfd14c931b9ae3c03501fedbfa12303b2f5204e # main
+    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-lint.yml@96b9df0ccd18bd252729ba4b48836e6ec0aaecb3 # main
