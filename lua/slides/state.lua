@@ -44,7 +44,7 @@ function M.reset()
   M.bg_win = nil
   M.source_buf = nil
   M.execution_job = nil
-  M.execution_id = 0
+  M.execution_id = M.execution_id + 1
 end
 
 return M
