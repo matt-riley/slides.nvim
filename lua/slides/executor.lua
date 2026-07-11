@@ -7,6 +7,7 @@ local M = {}
 ---@class slides.ExecutionRequest
 ---@field command string[] Process argv.
 ---@field stdin? string Process standard input.
+---@field cwd? string Process working directory.
 ---@field cleanup? fun() Cleanup invoked after process completion.
 
 ---@class slides.ExecutorDependencies
