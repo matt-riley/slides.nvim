@@ -37,23 +37,41 @@ T["prepares python code for stdin"] = function()
   MiniTest.expect.equality(request.stdin, "print('hello')")
 end
 
-T["prepares lua code in an isolated Neovim process"] = function()
+T["prepares Lua code in an isolated Neovim process"] = function()
+  local written
+  local deleted
   local request = executor.prepare({
     lang = "lua",
     code = { "print('hello')" },
-  }, deps)
+  }, {
+    progpath = deps.progpath,
+    tempname = deps.tempname,
+    writefile = function(lines, path)
+      written = { lines = lines, path = path }
+      return 0
+    end,
+    delete = function(path)
+      deleted = path
+      return 0
+    end,
+  })
 
+  MiniTest.expect.equality(written, {
+    lines = { "print('hello')" },
+    path = "/tmp/slides-code.lua",
+  })
   MiniTest.expect.equality(request.command, {
     "/usr/bin/nvim",
     "--headless",
     "-u",
     "NONE",
-    "-c",
-    "lua print('hello')",
-    "-c",
-    "qa!",
+    "-l",
+    "/tmp/slides-code.lua",
   })
-  MiniTest.expect.equality(request.stdin, nil)
+  MiniTest.expect.equality(type(request.cleanup), "function")
+
+  request.cleanup()
+  MiniTest.expect.equality(deleted, "/tmp/slides-code.lua")
 end
 
 T["uses a temporary Go file and removes it after execution"] = function()
