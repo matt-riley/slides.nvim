@@ -1,8 +1,10 @@
 -- lua/slides/init.lua
 local M = {}
 
+local executor = require("slides.executor")
 local parser = require("slides.parser")
 local renderer = require("slides.renderer")
+local runner = require("slides.runner")
 local state = require("slides.state")
 
 --- slides.nvim
@@ -30,6 +32,7 @@ local state = require("slides.state")
 ---@field fullscreen boolean Use fullscreen floating window.
 ---@field width number Floating width ratio in non-fullscreen mode.
 ---@field height number Floating height ratio in non-fullscreen mode.
+---@field execution_timeout integer Maximum code execution time in milliseconds.
 
 ---@private
 ---@type slides.Config
@@ -40,6 +43,7 @@ local defaults = {
   fullscreen = true,
   width = 0.8,
   height = 0.8,
+  execution_timeout = 30000,
 }
 
 ---@private
@@ -64,6 +68,14 @@ local function render_current()
   renderer.render(state.fragments[state.fragment_index], state.current, #state.slides, M.config)
 end
 
+---@private
+local function cancel_execution()
+  state.execution_id = state.execution_id + 1
+  local job = state.execution_job
+  state.execution_job = nil
+  runner.cancel(job)
+end
+
 --- Configure slides.nvim.
 ---
 --- Example:
@@ -79,6 +91,7 @@ function M.setup(opts)
     fullscreen = { opts.fullscreen, "boolean", true },
     width = { opts.width, "number", true },
     height = { opts.height, "number", true },
+    execution_timeout = { opts.execution_timeout, "number", true },
   })
   M.config = vim.tbl_deep_extend("force", vim.deepcopy(defaults), opts)
 end
@@ -92,6 +105,7 @@ end
 --- - `q` / `<Esc>`: close presentation
 function M.toggle()
   if state.active then
+    cancel_execution()
     renderer.close()
     pcall(vim.api.nvim_del_augroup_by_name, "SlidesLiveReload")
     state.reset()
@@ -107,6 +121,7 @@ function M.toggle()
   state.current = 1
   state.fragment_index = 1
   state.output_lines = nil
+  state.execution_job = nil
   state.active = true
 
   renderer.open(M.config)
@@ -149,6 +164,8 @@ function M.refresh()
     return
   end
 
+  cancel_execution()
+
   local lines = vim.api.nvim_buf_get_lines(state.source_buf, 0, -1, false)
   local slides = parser.parse(lines, M.config)
 
@@ -168,59 +185,65 @@ function M.execute_code()
     return
   end
 
+  cancel_execution()
+  local execution_id = state.execution_id
+
   local current_slide = (state.fragments and state.fragments[state.fragment_index]) or state.slides[state.current]
   local blocks = parser.find_code_blocks(current_slide)
 
   if #blocks == 0 then
-    print("No code blocks found on this slide.")
+    state.output_lines = { "No code blocks found on this slide." }
+    render_current()
     return
   end
 
-  local block = blocks[1]
-  ---@type string[]
-  local output = {}
+  local request, prepare_err = executor.prepare(blocks[1])
+  if not request then
+    state.output_lines = { prepare_err or "Unable to prepare code block." }
+    render_current()
+    return
+  end
 
-  ---@param result string
-  local function append_output(result)
-    for line in result:gmatch("[^\r\n]+") do
-      table.insert(output, line)
+  state.output_lines = { "Running..." }
+  render_current()
+
+  local cleaned = false
+  local function cleanup()
+    if cleaned then
+      return
+    end
+    cleaned = true
+    if request.cleanup then
+      request.cleanup()
     end
   end
 
-  ---@param ext string
-  ---@param cmd string
-  ---@param code_lines string[]
-  ---@return string
-  local function run_tempfile(ext, cmd, code_lines)
-    local tmp = vim.fn.tempname() .. ext
-    vim.fn.writefile(code_lines, tmp)
-    local result = vim.fn.system(cmd .. " " .. vim.fn.shellescape(tmp))
-    vim.fn.delete(tmp)
-    return result
-  end
+  local ok, job_or_err = pcall(runner.run, request.command, {
+    stdin = request.stdin,
+    cwd = request.cwd,
+    timeout = M.config.execution_timeout,
+  }, function(result)
+    cleanup()
 
-  if block.lang == "lua" then
-    local code = table.concat(block.code, "\n")
-    -- Capture print output? Complex. For now just run it.
-    -- Or use redirect.
-    append_output(vim.fn.execute("lua " .. code))
-  elseif block.lang == "bash" or block.lang == "sh" then
-    local code = table.concat(block.code, "\n")
-    append_output(vim.fn.system(code))
-  elseif block.lang == "python" or block.lang == "python3" then
-    local code = table.concat(block.code, "\n")
-    append_output(vim.fn.system("python3 -c " .. vim.fn.shellescape(code)))
-  elseif block.lang == "go" or block.lang == "golang" then
-    append_output(run_tempfile(".go", "go run", block.code))
-  elseif block.lang == "typescript" or block.lang == "ts" then
-    append_output(run_tempfile(".ts", "bun run", block.code))
-  else
-    print("Unsupported language: " .. (block.lang or "unknown"))
+    if not state.active or state.execution_id ~= execution_id then
+      return
+    end
+
+    state.execution_job = nil
+    state.output_lines = result.lines
+    render_current()
+  end)
+
+  if not ok then
+    cleanup()
+    if state.execution_id == execution_id then
+      state.output_lines = { tostring(job_or_err) }
+      render_current()
+    end
     return
   end
 
-  state.output_lines = output
-  render_current()
+  state.execution_job = job_or_err
 end
 
 --- Advance to the next fragment or slide.
@@ -234,6 +257,7 @@ function M.next_slide()
     return
   end
   if state.current < #state.slides then
+    cancel_execution()
     state.current = state.current + 1
     state.fragment_index = 1
     state.output_lines = nil
@@ -253,6 +277,7 @@ function M.prev_slide()
     return
   end
   if state.current > 1 then
+    cancel_execution()
     state.current = state.current - 1
     state.output_lines = nil
     update_fragments()

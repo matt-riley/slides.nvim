@@ -28,3 +28,6 @@ minitest.setup({
     reporter = minitest.gen_reporter.stdout(),
   },
 })
+
+require("slides.runner")
+require("slides.executor")

@@ -26,7 +26,8 @@ jobs:
           "${RUNNER_TEMP}/luals/bin/lua-language-server" \
             --check=. \
             --checklevel=Warning \
-            --logpath="${RUNNER_TEMP}/luals-log"
+            --logpath="${RUNNER_TEMP}/luals-log" \
+            || true
 
       - name: Fail if diagnostics exist
         run: |

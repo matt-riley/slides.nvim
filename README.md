@@ -9,7 +9,7 @@ A tiny Neovim plugin for presenting Markdown slides in a full-screen floating wi
 - Slide counter
 - Syntax highlighting
 - Live reload on file save
-- Execute code blocks with `<C-e>`
+- Execute code blocks asynchronously with `<C-e>`
 - Fragments/reveals with `++` separators
 - Pre-process content with `~~~` blocks
 - Toggle the viewer with `:Slides`
@@ -18,10 +18,10 @@ A tiny Neovim plugin for presenting Markdown slides in a full-screen floating wi
 
 ```lua
 -- lazy.nvim
-{ "mattriley/slides.nvim", opts = {} }
+{ "matt-riley/slides.nvim", opts = {} }
 
 -- packer.nvim
-use { "mattriley/slides.nvim", config = function() require("slides").setup() end }
+use { "matt-riley/slides.nvim", config = function() require("slides").setup() end }
 ```
 
 ## Usage
@@ -60,6 +60,7 @@ require("slides").setup({
   -- border = "rounded",
   -- width = 0.8,
   -- height = 0.8,
+  -- execution_timeout = 30000,
 })
 ```
 
@@ -67,7 +68,17 @@ require("slides").setup({
 
 ### Code Execution
 
-Press `<C-e>` to execute the first code block on the current slide. Supported languages: `lua`, `bash`, `sh`, `python`, `go`/`golang`, `ts`/`typescript` (via bun). In fullscreen mode the output is rendered in a footer area.
+Press `<C-e>` to execute the first code block on the current slide. Execution runs asynchronously through `vim.system`, so the editor remains responsive while the command is running. Moving to another slide, refreshing the source, closing the viewer, or starting another command cancels the active process and ignores stale output.
+
+Supported languages:
+
+- `lua` — executed by an isolated headless Neovim process
+- `bash` and `sh` — source is passed through standard input
+- `python` and `python3` — source is passed to `python3 -`
+- `go` and `golang` — executed from a temporary `.go` file
+- `ts` and `typescript` — executed from a temporary `.ts` file via Bun
+
+Standard output and standard error are rendered in the slide footer. Commands time out after 30 seconds by default; configure `execution_timeout` in milliseconds to change that limit.
 
 ### Fragments/Reveals
 
@@ -97,13 +108,15 @@ Available options:
 - `width`: floating window width (number, used when fullscreen = false)
 - `height`: floating window height (number, used when fullscreen = false)
 - `fragment_separator`: pattern for fragment separators (default: `^%s*%+%+%+*%s*$`)
+- `execution_timeout`: maximum code execution time in milliseconds (default: `30000`)
 
 Slides are split on `---`.
 
 ## Requirements
 
-- Neovim 0.8+
+- Neovim 0.10+ (`vim.system`)
 - (Optional) Treesitter Markdown parser for improved syntax highlighting
+- The relevant runtime for executed code (`bash`, `python3`, `go`, or `bun`)
 
 ## Versioning
 
@@ -112,7 +125,7 @@ Slides are split on `---`.
 
 ## Testing
 
-Tests use [mini.test](https://github.com/echasnovski/mini.nvim). Ensure mini.nvim is installed
+Tests use [mini.test](https://github.com/nvim-mini/mini.nvim). Ensure mini.nvim is installed
 (or set `MINI_PATH` to a local checkout), then run:
 
 ```bash
