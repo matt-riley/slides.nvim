@@ -11,6 +11,8 @@
 ---@field bg_buf integer? Fullscreen background buffer handle.
 ---@field bg_win integer? Fullscreen background window handle.
 ---@field source_buf integer? Source markdown buffer handle.
+---@field execution_job vim.SystemObj? Active asynchronous code process.
+---@field execution_id integer Monotonic identifier used to ignore stale callbacks.
 ---@type slides.State
 local M = {
   active = false,
@@ -24,6 +26,8 @@ local M = {
   bg_buf = nil,
   bg_win = nil,
   source_buf = nil,
+  execution_job = nil,
+  execution_id = 0,
 }
 
 --- Reset state to initial values.
@@ -39,6 +43,8 @@ function M.reset()
   M.bg_buf = nil
   M.bg_win = nil
   M.source_buf = nil
+  M.execution_job = nil
+  M.execution_id = 0
 end
 
 return M
