@@ -185,6 +185,9 @@ function M.execute_code()
     return
   end
 
+  cancel_execution()
+  local execution_id = state.execution_id
+
   local current_slide = (state.fragments and state.fragments[state.fragment_index]) or state.slides[state.current]
   local blocks = parser.find_code_blocks(current_slide)
 
@@ -200,10 +203,6 @@ function M.execute_code()
     render_current()
     return
   end
-
-  cancel_execution()
-  state.execution_id = state.execution_id + 1
-  local execution_id = state.execution_id
 
   state.output_lines = { "Running..." }
   render_current()
