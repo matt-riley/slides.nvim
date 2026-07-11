@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5](https://github.com/matt-riley/slides.nvim/compare/v0.1.4...v0.1.5) (2026-07-11)
+
+
+### Features
+
+* add asynchronous process runner ([646b015](https://github.com/matt-riley/slides.nvim/commit/646b0153158e31f96370cec899dafb274ba5cf68))
+* build safe language execution requests ([ba59934](https://github.com/matt-riley/slides.nvim/commit/ba599341a7faf3428cf7b8f9445ddbd645cca108))
+* execute slide code asynchronously ([f90aee1](https://github.com/matt-riley/slides.nvim/commit/f90aee1f49b02a0489e6a7907224f1cf88ee51de))
+* track slide execution jobs ([6da60b8](https://github.com/matt-riley/slides.nvim/commit/6da60b8bbc557cb890a9bcc96e8e72e61e8b3cc2))
+
+
+### Bug Fixes
+
+* cancel active execution before preparing code ([0aeea79](https://github.com/matt-riley/slides.nvim/commit/0aeea79d87c4f1d7d9798c78ae4a1a7dff7bced8))
+* **ci:** report LuaLS diagnostics before failing ([1074a6d](https://github.com/matt-riley/slides.nvim/commit/1074a6d98ed24008070d6e55b21634ce595ca25a))
+* keep execution generations monotonic ([bc84a66](https://github.com/matt-riley/slides.nvim/commit/bc84a66d31db08fdb7afd691390250cd5f923d08))
+
 ## [0.1.4](https://github.com/matt-riley/slides.nvim/compare/v0.1.3...v0.1.4) (2026-02-28)
 
 
