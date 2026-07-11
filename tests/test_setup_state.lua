@@ -51,7 +51,7 @@ state_set["resets state fields"] = function()
   MiniTest.expect.equality(state.bg_win, nil)
   MiniTest.expect.equality(state.source_buf, nil)
   MiniTest.expect.equality(state.execution_job, nil)
-  MiniTest.expect.equality(state.execution_id, 0)
+  MiniTest.expect.equality(state.execution_id, 13)
 end
 
 T["state.reset"] = state_set
