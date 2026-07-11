@@ -133,6 +133,25 @@ execution_set["ignores stale output after replacing a job"] = function()
   MiniTest.expect.equality(state.execution_job, nil)
 end
 
+execution_set["cancels an active job when the slide has no code block"] = function()
+  local job = { id = 1 }
+  local cancelled
+
+  state.execution_job = job
+  state.fragments = { { "# No code here" } }
+
+  runner.cancel = function(value)
+    cancelled = value
+    return true
+  end
+
+  slides.execute_code()
+
+  MiniTest.expect.equality(cancelled, job)
+  MiniTest.expect.equality(state.execution_job, nil)
+  MiniTest.expect.equality(state.output_lines, { "No code blocks found on this slide." })
+end
+
 T["execution"] = execution_set
 
 return T
