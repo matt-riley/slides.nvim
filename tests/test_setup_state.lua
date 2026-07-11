@@ -15,6 +15,7 @@ setup_set["applies defaults and overrides"] = function()
   MiniTest.expect.equality(slides.config.fragment_separator, "^%s*%+%+%+*%s*$")
   MiniTest.expect.equality(slides.config.width, 0.8)
   MiniTest.expect.equality(slides.config.height, 0.8)
+  MiniTest.expect.equality(slides.config.execution_timeout, 30000)
 end
 
 T["setup"] = setup_set
@@ -33,6 +34,8 @@ state_set["resets state fields"] = function()
   state.bg_buf = 56
   state.bg_win = 78
   state.source_buf = 90
+  state.execution_job = { id = 1 }
+  state.execution_id = 12
 
   state.reset()
 
@@ -47,6 +50,8 @@ state_set["resets state fields"] = function()
   MiniTest.expect.equality(state.bg_buf, nil)
   MiniTest.expect.equality(state.bg_win, nil)
   MiniTest.expect.equality(state.source_buf, nil)
+  MiniTest.expect.equality(state.execution_job, nil)
+  MiniTest.expect.equality(state.execution_id, 0)
 end
 
 T["state.reset"] = state_set
