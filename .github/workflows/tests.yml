@@ -8,4 +8,4 @@ on:
 
 jobs:
   tests:
-    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-tests.yml@cc060a6749be6869154f21c6b3463a1ca218e2e3 # main
+    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-tests.yml@2aa90cd79663d10959d67faf89a3ecce29392f6a # main
