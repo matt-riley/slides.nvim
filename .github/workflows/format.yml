@@ -8,4 +8,4 @@ on:
 
 jobs:
   format:
-    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-format.yml@cc060a6749be6869154f21c6b3463a1ca218e2e3 # main
+    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-format.yml@3516030936d1bc71f73d214769d1214de15a0eb1 # main
