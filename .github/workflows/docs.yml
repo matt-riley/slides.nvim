@@ -8,6 +8,7 @@ on:
       - "lua/**"
       - "plugin/**"
       - "Makefile"
+      - "VERSION"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
