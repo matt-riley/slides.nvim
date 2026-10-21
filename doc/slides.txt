@@ -1,7 +1,8 @@
                                                                         *slides*
 slides.nvim
 
-Version: 0.1.4
+Version: 0.1.5
+
 
 
 Present Markdown files as slides inside a floating Neovim window.
