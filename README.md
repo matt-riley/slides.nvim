@@ -114,7 +114,7 @@ Slides are split on `---`.
 
 ## Requirements
 
-- Neovim 0.10+ (`vim.system`)
+- Neovim nightly
 - (Optional) Treesitter Markdown parser for improved syntax highlighting
 - The relevant runtime for executed code (`bash`, `python3`, `go`, or `bun`)
 
