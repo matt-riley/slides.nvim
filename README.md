@@ -86,9 +86,9 @@ Use a line containing only `++` (whitespace is ok) to reveal content in steps wi
 
 ```markdown
 - Item 1
-+
+++
 - Item 2
-+
+++
 - Item 3
 ```
 

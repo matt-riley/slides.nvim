@@ -29,6 +29,7 @@ Fields ~
 {fullscreen} `(boolean)` Use fullscreen floating window.
 {width} `(number)` Floating width ratio in non-fullscreen mode.
 {height} `(number)` Floating height ratio in non-fullscreen mode.
+{execution_timeout} `(integer)` Maximum code execution time in milliseconds.
 
 ------------------------------------------------------------------------------
                                                                      *M.setup()*
