@@ -2,8 +2,6 @@ name: Tests
 
 on:
   push:
-    branches:
-      - main
   pull_request:
 
 jobs:
@@ -14,3 +12,5 @@ jobs:
       group: ${{ github.workflow }}:${{ github.ref }}:tests
       cancel-in-progress: true
     uses: matt-riley/matt-riley-ci/.github/workflows/nvim-tests.yml@0a310f1286537ed4fd000af4b35cd6459b00448d # v4
+    with:
+      neovim-version: nightly
