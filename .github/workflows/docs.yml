@@ -21,27 +21,10 @@ permissions:
 
 jobs:
   docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+    permissions:
+      contents: write
+    uses: matt-riley/matt-riley-ci/.github/workflows/nvim-docs.yml@002d16c00bc74ebced433f0a16187c9b13451194 # v4.2.0
+    with:
+      commit-message: "chore(docs): regenerate vim help"
+      file-pattern: doc/*.txt
 
-      - name: Install Neovim
-        run: sudo apt-get update && sudo apt-get install -y neovim
-
-      - name: Fetch mini.nvim
-        run: |
-          rm -rf "${RUNNER_TEMP}/mini.nvim" "${RUNNER_TEMP}/mini.nvim-main"
-          curl -fsSL https://github.com/echasnovski/mini.nvim/archive/refs/heads/main.tar.gz | tar -xz -C "${RUNNER_TEMP}"
-          mv "${RUNNER_TEMP}/mini.nvim-main" "${RUNNER_TEMP}/mini.nvim"
-
-      - name: Generate docs
-        env:
-          MINI_PATH: ${{ runner.temp }}/mini.nvim
-        run: make docs
-
-      - name: Commit docs
-        uses: stefanzweifel/git-auto-commit-action@d0b01107b5db882071f96de5dd4b54961ea93f4c # v7
-        with:
-          commit_message: "chore(docs): regenerate vim help"
-          file_pattern: doc/*.txt
