@@ -9,6 +9,16 @@ local state = require("slides.state")
 local original_prepare
 local original_run
 local original_cancel
+local prepare_stub
+local run_stub
+local cancel_stub
+
+---@param module table
+---@param name string
+---@param value any
+local function set_field(module, name, value)
+  module[name] = value
+end
 
 local execution_set = MiniTest.new_set({
   hooks = {
@@ -16,6 +26,16 @@ local execution_set = MiniTest.new_set({
       original_prepare = executor.prepare
       original_run = runner.run
       original_cancel = runner.cancel
+
+      set_field(executor, "prepare", function(...)
+        return prepare_stub(...)
+      end)
+      set_field(runner, "run", function(...)
+        return run_stub(...)
+      end)
+      set_field(runner, "cancel", function(...)
+        return cancel_stub(...)
+      end)
 
       slides.setup({ execution_timeout = 1234 })
       state.reset()
@@ -33,9 +53,9 @@ local execution_set = MiniTest.new_set({
       state.fragment_index = 1
     end,
     post_case = function()
-      executor.prepare = original_prepare
-      runner.run = original_run
-      runner.cancel = original_cancel
+      set_field(executor, "prepare", original_prepare)
+      set_field(runner, "run", original_run)
+      set_field(runner, "cancel", original_cancel)
       state.reset()
     end,
   },
@@ -47,7 +67,7 @@ execution_set["renders running state and completed output"] = function()
   local cleaned = false
   local job = { id = 1 }
 
-  executor.prepare = function()
+  prepare_stub = function()
     return {
       command = { "bash" },
       stdin = "echo hello",
@@ -57,11 +77,11 @@ execution_set["renders running state and completed output"] = function()
     }
   end
 
-  runner.cancel = function()
+  cancel_stub = function()
     return false
   end
 
-  runner.run = function(command, opts, on_exit)
+  run_stub = function(command, opts, on_exit)
     captured.command = command
     captured.opts = opts
     callback = on_exit
@@ -92,7 +112,7 @@ execution_set["ignores stale output after replacing a job"] = function()
   local cancelled
   local cleanup_count = 0
 
-  executor.prepare = function()
+  prepare_stub = function()
     return {
       command = { "bash" },
       stdin = "echo hello",
@@ -102,7 +122,7 @@ execution_set["ignores stale output after replacing a job"] = function()
     }
   end
 
-  runner.cancel = function(job)
+  cancel_stub = function(job)
     if job then
       cancelled = job
       return true
@@ -110,7 +130,7 @@ execution_set["ignores stale output after replacing a job"] = function()
     return false
   end
 
-  runner.run = function(_, _, callback)
+  run_stub = function(_, _, callback)
     run_count = run_count + 1
     callbacks[run_count] = callback
     return jobs[run_count]
@@ -140,7 +160,7 @@ execution_set["cancels an active job when the slide has no code block"] = functi
   state.execution_job = job
   state.fragments = { { "# No code here" } }
 
-  runner.cancel = function(value)
+  cancel_stub = function(value)
     cancelled = value
     return true
   end

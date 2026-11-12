@@ -1,9 +1,5 @@
 local M = {}
 
----@class slides.CodeBlock
----@field lang string
----@field code string[]
-
 ---@class slides.ExecutionRequest
 ---@field command string[] Process argv.
 ---@field stdin? string Process standard input.
