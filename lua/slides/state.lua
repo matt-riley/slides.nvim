@@ -1,4 +1,10 @@
 -- lua/slides/state.lua
+
+--- Handle for an in-flight code execution. Production values come from
+--- vim.system; tests may use a lighter stand-in. cancel() only invokes kill
+--- when it is present.
+---@alias slides.ExecutionJob { kill?: fun(self: any, signal: integer|string) }
+
 ---@class slides.State
 ---@field active boolean Whether presentation mode is active.
 ---@field slides string[][] Parsed slides.
@@ -11,7 +17,7 @@
 ---@field bg_buf integer? Fullscreen background buffer handle.
 ---@field bg_win integer? Fullscreen background window handle.
 ---@field source_buf integer? Source markdown buffer handle.
----@field execution_job vim.SystemObj? Active asynchronous code process.
+---@field execution_job slides.ExecutionJob? Active asynchronous code process.
 ---@field execution_id integer Monotonic identifier used to ignore stale callbacks.
 ---@type slides.State
 local M = {

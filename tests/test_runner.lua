@@ -4,14 +4,24 @@ local T = MiniTest.new_set()
 local runner = require("slides.runner")
 
 local original_system
+local system_stub
+
+---@param name string
+---@param value any
+local function set_vim(name, value)
+  vim[name] = value
+end
 
 local runner_set = MiniTest.new_set({
   hooks = {
     pre_case = function()
       original_system = vim.system
+      set_vim("system", function(...)
+        return system_stub(...)
+      end)
     end,
     post_case = function()
-      vim.system = original_system
+      set_vim("system", original_system)
     end,
   },
 })
@@ -21,7 +31,7 @@ runner_set["runs argv commands with structured options"] = function()
   local system_callback
   local handle = { id = 42 }
 
-  vim.system = function(command, opts, callback)
+  system_stub = function(command, opts, callback)
     captured.command = command
     captured.opts = opts
     system_callback = callback
@@ -68,7 +78,7 @@ end
 runner_set["uses stderr for failed command output"] = function()
   local system_callback
 
-  vim.system = function(_, _, callback)
+  system_stub = function(_, _, callback)
     system_callback = callback
     return {}
   end
@@ -96,7 +106,7 @@ end
 runner_set["reports a failed command with no output"] = function()
   local system_callback
 
-  vim.system = function(_, _, callback)
+  system_stub = function(_, _, callback)
     system_callback = callback
     return {}
   end

@@ -3,6 +3,17 @@ local T = MiniTest.new_set()
 
 local executor = require("slides.executor")
 
+---@param request slides.ExecutionRequest?
+---@param err string?
+---@return slides.ExecutionRequest
+local function expect_request(request, err)
+  MiniTest.expect.equality(err, nil)
+  if not request then
+    error("expected an execution request")
+  end
+  return request
+end
+
 local deps = {
   progpath = "/usr/bin/nvim",
   tempname = function()
@@ -17,10 +28,10 @@ local deps = {
 }
 
 T["prepares shell code for stdin"] = function()
-  local request = executor.prepare({
+  local request = expect_request(executor.prepare({
     lang = "bash",
     code = { "echo hello", "echo world" },
-  }, deps)
+  }, deps))
 
   MiniTest.expect.equality(request.command, { "bash" })
   MiniTest.expect.equality(request.stdin, "echo hello\necho world")
@@ -28,10 +39,10 @@ T["prepares shell code for stdin"] = function()
 end
 
 T["prepares python code for stdin"] = function()
-  local request = executor.prepare({
+  local request = expect_request(executor.prepare({
     lang = "python",
     code = { "print('hello')" },
-  }, deps)
+  }, deps))
 
   MiniTest.expect.equality(request.command, { "python3", "-" })
   MiniTest.expect.equality(request.stdin, "print('hello')")
@@ -40,7 +51,7 @@ end
 T["prepares Lua code in an isolated Neovim process"] = function()
   local written
   local deleted
-  local request = executor.prepare({
+  local request = expect_request(executor.prepare({
     lang = "lua",
     code = { "print('hello')" },
   }, {
@@ -54,7 +65,7 @@ T["prepares Lua code in an isolated Neovim process"] = function()
       deleted = path
       return 0
     end,
-  })
+  }))
 
   MiniTest.expect.equality(written, {
     lines = { "print('hello')" },
@@ -70,14 +81,18 @@ T["prepares Lua code in an isolated Neovim process"] = function()
   })
   MiniTest.expect.equality(type(request.cleanup), "function")
 
-  request.cleanup()
+  local lua_cleanup = request.cleanup
+  if not lua_cleanup then
+    error("expected a cleanup function")
+  end
+  lua_cleanup()
   MiniTest.expect.equality(deleted, "/tmp/slides-code.lua")
 end
 
 T["uses a temporary Go file and removes it after execution"] = function()
   local written
   local deleted
-  local request = executor.prepare({
+  local request = expect_request(executor.prepare({
     lang = "go",
     code = { "package main", "func main() {}" },
   }, {
@@ -91,7 +106,7 @@ T["uses a temporary Go file and removes it after execution"] = function()
       deleted = path
       return 0
     end,
-  })
+  }))
 
   MiniTest.expect.equality(written, {
     lines = { "package main", "func main() {}" },
@@ -100,13 +115,17 @@ T["uses a temporary Go file and removes it after execution"] = function()
   MiniTest.expect.equality(request.command, { "go", "run", "/tmp/slides-code.go" })
   MiniTest.expect.equality(type(request.cleanup), "function")
 
-  request.cleanup()
+  local go_cleanup = request.cleanup
+  if not go_cleanup then
+    error("expected a cleanup function")
+  end
+  go_cleanup()
   MiniTest.expect.equality(deleted, "/tmp/slides-code.go")
 end
 
 T["uses a temporary TypeScript file"] = function()
   local written_path
-  local request = executor.prepare({
+  local request = expect_request(executor.prepare({
     lang = "typescript",
     code = { "console.log('hello')" },
   }, {
@@ -117,7 +136,7 @@ T["uses a temporary TypeScript file"] = function()
       return 0
     end,
     delete = deps.delete,
-  })
+  }))
 
   MiniTest.expect.equality(written_path, "/tmp/slides-code.ts")
   MiniTest.expect.equality(request.command, { "bun", "run", "/tmp/slides-code.ts" })
